@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Control Tower – Mattias</title>
+<style>
+:root{--bg:#0A0C10;--bg2:#111318;--bg3:#181C23;--bg4:#1E2330;--b:#252B38;--b2:#3A4358;--t:#E8ECF4;--t2:#C8D0E0;--t3:#9AA3B8;--g:#2ECC8A;--gd:#1A5C3E;--gb:#0D2B1E;--r:#FF4D6B;--rd:#8C1E2E;--rb:#2B0D14;--y:#F5B942;--yd:#7A5410;--yb:#2B1E07;--bl:#4A9EFF;--bld:#1A3D7A;--blb:#0D1E3A;--rad:10px;--rads:6px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--t);font-family:-apple-system,'Segoe UI',sans-serif;font-size:14px;min-height:100%}
+.wrap{max-width:560px;margin:0 auto;padding:14px;padding-bottom:50px}
+/* HEADER */
+.top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.greet{font-size:20px;font-weight:800}
+.date{font-size:11px;color:var(--t3);font-family:'Courier New',monospace;margin-top:2px}
+.clock{font-size:11px;color:var(--t3);font-family:'Courier New',monospace;text-align:right}
+/* DAGENS LÄGE */
+.status-banner{border-radius:var(--rad);padding:13px 15px;margin-bottom:16px;border-left:4px solid;display:flex;align-items:center;gap:12px}
+.sb-ok{background:var(--gb);border-color:var(--g)}
+.sb-warn{background:var(--yb);border-color:var(--y)}
+.sb-alert{background:var(--rb);border-color:var(--r)}
+.sb-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;box-shadow:0 0 8px}
+.sb-txt{flex:1}
+.sb-h{font-size:14px;font-weight:700;margin-bottom:1px}
+.sb-s{font-size:11px;color:var(--t2)}
+/* DOMÄN-KORT */
+.card{background:var(--bg3);border:1px solid var(--b);border-radius:var(--rad);padding:14px;margin-bottom:12px;cursor:pointer;transition:border-color .15s,transform .1s}
+.card:active{transform:scale(.99)}
+.card.live:hover{border-color:var(--b2)}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.lamp{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.lamp-g{background:var(--g);box-shadow:0 0 10px var(--g)}
+.lamp-y{background:var(--y);box-shadow:0 0 10px var(--y)}
+.lamp-r{background:var(--r);box-shadow:0 0 10px var(--r)}
+.lamp-off{background:var(--b2)}
+.card-title{font-size:15px;font-weight:800;flex:1}
+.card-arrow{font-size:18px;color:var(--t3)}
+.card-status{font-size:10px;font-family:'Courier New',monospace;padding:2px 8px;border-radius:20px;font-weight:700}
+.cs-g{background:var(--gb);color:var(--g)}
+.cs-y{background:var(--yb);color:var(--y)}
+.cs-r{background:var(--rb);color:var(--r)}
+.cs-off{background:var(--bg4);color:var(--t3)}
+/* KPI-RAD */
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{background:var(--bg4);border-radius:var(--rads);padding:9px 10px}
+.kpi-l{font-size:9px;color:var(--t2);font-family:'Courier New',monospace;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.kpi-v{font-size:15px;font-weight:800}
+.kpi-s{font-size:10px;color:var(--t3);font-family:'Courier New',monospace;margin-top:1px}
+.pos{color:var(--g)}.neg{color:var(--r)}.wrn{color:var(--y)}.blu{color:var(--bl)}
+/* SIGNALER inne i kort */
+.sig-row{margin-top:11px;padding-top:11px;border-top:1px solid var(--b)}
+.sig-line{display:flex;align-items:center;gap:7px;font-size:12px;margin-bottom:5px;color:var(--t2)}
+.sig-line:last-child{margin-bottom:0}
+.sig-ic{font-size:11px;flex-shrink:0}
+/* PLACEHOLDER */
+.ph{padding:18px 14px;text-align:center}
+.ph-txt{font-size:12px;color:var(--t3);font-style:italic}
+.ph-sub{font-size:10px;color:var(--t3);font-family:'Courier New',monospace;margin-top:4px}
+/* MARKNAD */
+.market{background:var(--bg3);border:1px solid var(--b);border-radius:var(--rad);padding:13px 14px;margin-bottom:12px}
+.market-h{font-size:10px;color:var(--t2);font-family:'Courier New',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;font-weight:600}
+.mkt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mkt-item{text-align:center}
+.mkt-n{font-size:9px;color:var(--t3);font-family:'Courier New',monospace;margin-bottom:2px}
+.mkt-v{font-size:13px;font-weight:700}
+.sectionlabel{font-size:10px;color:var(--t3);font-family:'Courier New',monospace;text-transform:uppercase;letter-spacing:.1em;margin:18px 0 9px 2px;font-weight:600}
+/* ROTATIONSSIGNALER */
+.rot{background:var(--bg3);border:1px solid var(--b);border-radius:var(--rad);padding:13px 14px;margin-bottom:12px}
+.rot-row{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--b)}
+.rot-row:last-child{border-bottom:none}
+.rot-lamp{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.rot-body{flex:1;min-width:0}
+.rot-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.rot-state{font-size:11px;color:var(--t2)}
+.rot-metric{text-align:right;flex-shrink:0}
+.rot-mv{font-size:13px;font-weight:700;font-family:'Courier New',monospace}
+.rot-ml{font-size:9px;color:var(--t3);font-family:'Courier New',monospace;margin-top:1px}
+/* STATUS-BADGES */
+.stat-row{margin-top:11px;padding-top:11px;border-top:1px solid var(--b)}
+.stat-line{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:6px;color:var(--t2)}
+.stat-line:last-child{margin-bottom:0}
+.stat-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{font-size:10px;font-family:'Courier New',monospace;font-weight:700;padding:2px 8px;border-radius:20px;flex-shrink:0}
+.b-köp{background:var(--gb);color:var(--g)}
+.b-sälj{background:var(--rb);color:var(--r)}
+.b-neutral{background:var(--bg4);color:var(--t3)}
+.b-neq{background:var(--yb);color:var(--y);font-size:11px;padding:2px 6px}
+/* UPPLADDNING */
+.upload{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px dashed var(--b2);border-radius:var(--rad);padding:11px 13px;margin-bottom:14px}
+.upload-btn{background:var(--bld);color:var(--t);border:none;border-radius:var(--rads);padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0}
+.upload-btn:active{transform:scale(.97)}
+.upload-info{flex:1;font-size:11px;color:var(--t3);font-family:'Courier New',monospace;line-height:1.4}
+.upload-info b{color:var(--g)}
+.upload-warn{color:var(--y)}
+#fileInput{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="greet" id="greet">God morgon, Mattias</div>
+      <div class="date" id="date">—</div>
+    </div>
+    <div class="clock" id="clock">—</div>
+  </div>
+
+  <!-- UPPLADDNING -->
+  <div class="upload">
+    <button class="upload-btn" onclick="document.getElementById('fileInput').click()">📁 Ladda upp manuellt</button>
+    <div class="upload-info" id="uploadInfo">Hämtar data automatiskt. Uppladdning finns som reserv om hämtning misslyckas.</div>
+    <input type="file" id="fileInput" accept=".csv" multiple>
+  </div>
+
+  <!-- DAGENS LÄGE -->
+  <div class="status-banner sb-warn" id="banner">
+    <div class="sb-dot" style="background:var(--y);box-shadow:0 0 8px var(--y)"></div>
+    <div class="sb-txt">
+      <div class="sb-h" id="banner-h">1 sak att kolla idag</div>
+      <div class="sb-s" id="banner-s">Studsvik översåld (RSI 29) · 4 fonder flaggade för sälj</div>
+    </div>
+  </div>
+
+  <div class="sectionlabel">Domäner</div>
+
+  <!-- PORTFÖLJ -->
+  <div class="card live" onclick="alert('Här öppnas Portföljdashboarden')">
+    <div class="card-head">
+      <div class="lamp lamp-g"></div>
+      <div class="card-title">Portfölj</div>
+      <span class="card-status cs-g">OK</span>
+      <span class="card-arrow">›</span>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="kpi-l">YTD Brutto</div><div class="kpi-v pos" data-kpi="ytd">+11,6%</div><div class="kpi-s" data-kpi="ytd-sub">+172 589</div></div>
+      <div class="kpi"><div class="kpi-l">Portfölj</div><div class="kpi-v blu" data-kpi="port">3,66M</div><div class="kpi-s">kr</div></div>
+      <div class="kpi"><div class="kpi-l">Cash</div><div class="kpi-v wrn" data-kpi="cash">19,9%</div><div class="kpi-s" data-kpi="cash-sub">727k redo</div></div>
+    </div>
+    <div class="sig-row" id="sigRow">
+      <div class="sig-line"><span class="sig-ic">🔵</span> Studsvik översåld (RSI 29) — bevaka köpläge</div>
+      <div class="sig-line"><span class="sig-ic">🟢</span> Slår OMX30 (+11,6% vs +9%)</div>
+    </div>
+    <div class="stat-row" id="statRow">
+      <div class="stat-line"><span class="stat-name">Investor B</span><span class="badge b-neutral">BEHÅLL</span></div>
+      <div class="stat-line"><span class="stat-name">Studsvik <span style="color:var(--t3);font-size:10px">(RSI 29)</span></span><span class="badge b-sälj">SÄLJ</span><span class="badge b-neq">≠</span></div>
+    </div>
+    <div class="stat-row" id="fondRow" style="display:none"></div>
+  </div>
+
+  <!-- TRADING -->
+  <div class="card">
+    <div class="card-head">
+      <div class="lamp lamp-off"></div>
+      <div class="card-title" style="color:var(--t3)">Trading</div>
+      <span class="card-status cs-off">EJ BYGGD</span>
+    </div>
+    <div class="ph">
+      <div class="ph-txt">Trading-dashboard byggs härnäst</div>
+      <div class="ph-sub">winrate · R-multiple · öppna positioner · momentum</div>
+    </div>
+  </div>
+
+  <!-- PRIVATEKONOMI -->
+  <div class="card">
+    <div class="card-head">
+      <div class="lamp lamp-off"></div>
+      <div class="card-title" style="color:var(--t3)">Privatekonomi</div>
+      <span class="card-status cs-off">EJ BYGGD</span>
+    </div>
+    <div class="ph">
+      <div class="ph-txt">Privatekonomi (Zlantar) byggs senare</div>
+      <div class="ph-sub">runway · månadsutgifter · sparkvot</div>
+    </div>
+  </div>
+
+  <div class="sectionlabel">Marknadsläge</div>
+  <div class="market">
+    <div class="mkt-grid">
+      <div class="mkt-item"><div class="mkt-n">OMX30</div><div class="mkt-v pos" data-mkt="omx">+9,0%</div></div>
+      <div class="mkt-item"><div class="mkt-n">NASDAQ</div><div class="mkt-v pos">+21,0%</div></div>
+      <div class="mkt-item"><div class="mkt-n">10-ÅR RÄNTA</div><div class="mkt-v" data-mkt="ranta">2,70%</div></div>
+      <div class="mkt-item"><div class="mkt-n">USD/SEK</div><div class="mkt-v" data-mkt="usdsek">9,29</div></div>
+      <div class="mkt-item"><div class="mkt-n">VIX</div><div class="mkt-v pos" data-mkt="vix">2,81</div></div>
+      <div class="mkt-item"><div class="mkt-n">FASTIGHET</div><div class="mkt-v neg" data-mkt="fast">−8,0%</div></div>
+    </div>
+  </div>
+
+  <div class="sectionlabel">Rotationssignaler</div>
+  <div class="rot">
+    <div class="rot-row">
+      <div class="rot-lamp lamp-off" id="fastLamp"></div>
+      <div class="rot-body">
+        <div class="rot-name" style="color:var(--t3)">Fastigheter</div>
+        <div class="rot-state" id="fastState">Ränta 2,70% — 0,2 pe från tröskel (2,5%). Index −8% YTD. Nära förvarning.</div>
+      </div>
+      <div class="rot-metric">
+        <div class="rot-mv wrn" id="fastMv">NÄRA</div>
+        <div class="rot-ml">10-ÅR ↓</div>
+      </div>
+    </div>
+    <div class="rot-row">
+      <div class="rot-lamp lamp-off" id="smallLamp"></div>
+      <div class="rot-body">
+        <div class="rot-name" style="color:var(--t3)">Småbolag</div>
+        <div class="rot-state" id="smallState">OMXSPI +5% vs OMXS30 +9%. Storbolag leder, −4 pe. Ingen rotation.</div>
+      </div>
+      <div class="rot-metric">
+        <div class="rot-mv" style="color:var(--t3)" id="smallMv">AV</div>
+        <div class="rot-ml" id="smallMl">SPI<OMX30</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:14px">
+    <span id="footdate" style="font-size:10px;color:var(--t3);font-family:'Courier New',monospace">Control Tower · prototyp · data 2026-05-30</span>
+  </div>
+</div>
+<script>
+/* ============================================================
+   ROTATIONSSIGNAL-LOGIK (för live-data senare)
+
+   FASTIGHET (tvåstegs):
+     ranta < 2,5%            -> GUL  "förutsättning på plats, börja titta"
+     ranta < 2,5% & idx>0    -> GRÖN "bekräftad vändning, agera"
+     annars                  -> AV   (visa avstånd till tröskel om < 0,5 pe = NÄRA)
+     Källa: Index "10-års ränta" (Senast) + "Fastigheter" (i år)
+
+   SMÅBOLAG:
+     OMXSPI_ytd > OMXS30_ytd -> GRÖN "småbolag leder rotationen"
+     annars                  -> AV
+     Källa: Index "OMX Stockholm PI" vs "OMX Stockholm 30" (i år)
+
+   Tröskel NÄRA = inom 0,5 procentenheter från gränsen.
+   ============================================================ */
+const now = new Date();
+const days = ['söndag','måndag','tisdag','onsdag','torsdag','fredag','lördag'];
+const months = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+const h = now.getHours();
+document.getElementById('greet').textContent = (h<10?'God morgon':h<17?'God dag':'God kväll')+', Mattias';
+document.getElementById('date').textContent = days[now.getDay()]+' '+now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
+document.getElementById('clock').textContent = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+
+/* ============================================================
+   STATUS-MODUL — dina beslut överstyr automatiska signaler
+
+   Läs en valfri "Status"-kolumn i Aktier.csv och Fond.csv.
+   Tillåtna värden (kan utökas i STATUS_DIR nedan):
+     Kärninnehav · Behåll · Öka · Minska · Sälj · Bevaka · (tom)
+
+   REGLER:
+   1. Har innehavet en Status -> visa den, överstyr auto-signalen.
+   2. Tom Status -> auto-signalen (RSI/momentum) gäller fritt.
+   3. RSI saknas eller = 0 -> ingen signal (trasig/saknad data).
+   4. ≠-markör (konflikt B, snäv): visas BARA vid rak motsättning
+      köp<->sälj. Ex: Status "Öka" men signal "Sälj" -> ≠.
+      Passiv status (Behåll/Bevaka/Kärninnehav) ger aldrig ≠.
+   ============================================================ */
+const STATUS_DIR = {  // status -> riktning
+  'Sälj':'sälj','Minska':'sälj','Öka':'köp',
+  'Behåll':'neutral','Kärninnehav':'neutral','Bevaka':'neutral'
+};
+
+function autoSignal(rsi){
+  if(rsi===null||rsi===undefined||rsi===0) return {txt:'—',type:'neutral'};
+  if(rsi<25) return {txt:'Extremt översåld — köpläge',type:'köp'};
+  if(rsi<30) return {txt:'Översåld',type:'köp'};
+  if(rsi>75) return {txt:'Överköpt — vinsthemtagning?',type:'sälj'};
+  if(rsi>70) return {txt:'Nära överköpt',type:'sälj'};
+  return {txt:'Neutral',type:'neutral'};
+}
+
+function isConflict(statusDir, sigType){  // konflikt B
+  return ['köp','sälj'].includes(statusDir) &&
+         ['köp','sälj'].includes(sigType) &&
+         statusDir !== sigType;
+}
+
+/* resolveHolding: returnerar vad Control Tower ska visa för ett innehav.
+   { label, statusClass, conflict }  */
+function resolveHolding(status, rsi){
+  const sig = autoSignal(rsi);
+  if(status && STATUS_DIR.hasOwnProperty(status)){
+    return {
+      label: status,
+      statusClass: STATUS_DIR[status],
+      conflict: isConflict(STATUS_DIR[status], sig.type)
+    };
+  }
+  return { label: sig.txt, statusClass: sig.type, conflict:false };
+}
+
+/* --- Rendera aktiernas status/signal-rad live --- */
+const BADGE_CLASS={'köp':'b-köp','sälj':'b-sälj','neutral':'b-neutral'};
+function renderStocks(aktier){
+  // Visa: innehav med status satt FÖRST, sedan innehav med aktiv signal (ej neutral)
+  const withStatus=[], withSignal=[];
+  for(const a of aktier){
+    const r=resolveHolding(a.status,a.rsi);
+    if(a.status) withStatus.push({a,r});
+    else if(r.statusClass!=='neutral') withSignal.push({a,r});
+  }
+  // sortera signaler: köp (köpläge) före sälj
+  withSignal.sort((x,y)=>(x.r.statusClass==='köp'?0:1)-(y.r.statusClass==='köp'?0:1));
+  const rows=[...withStatus, ...withSignal].slice(0,5); // tak 5 rader
+  const statRow=document.getElementById('statRow');
+  if(!statRow) return;
+  if(!rows.length){ statRow.innerHTML='<div class="stat-line" style="color:var(--t3);font-size:11px">Inga aktiva signaler eller beslut</div>'; return; }
+  statRow.innerHTML=rows.map(({a,r})=>{
+    const rsiTxt=(a.rsi!=null&&a.rsi!==0)?' <span style="color:var(--t3);font-size:10px">(RSI '+Math.round(a.rsi)+')</span>':'';
+    const badge='<span class="badge '+BADGE_CLASS[r.statusClass]+'">'+r.label.toUpperCase()+'</span>';
+    const neq=r.conflict?'<span class="badge b-neq">≠</span>':'';
+    return '<div class="stat-line"><span class="stat-name">'+a.namn+rsiTxt+'</span>'+badge+neq+'</div>';
+  }).join('');
+}
+
+/* --- Rendera fondernas status (bara fonder med status satt) --- */
+const STATUS_BADGE={'Sälj':'b-sälj','Minska':'b-sälj','Öka':'b-köp','Behåll':'b-neutral','Kärninnehav':'b-neutral','Bevaka':'b-neutral'};
+function renderFunds(fonder){
+  const withStatus=fonder.filter(f=>f.status&&STATUS_BADGE.hasOwnProperty(f.status));
+  const fondRow=document.getElementById('fondRow');
+  if(!fondRow) return;
+  if(!withStatus.length){ fondRow.style.display='none'; return; }
+  fondRow.style.display='';
+  fondRow.innerHTML=withStatus.slice(0,5).map(f=>{
+    const badge='<span class="badge '+STATUS_BADGE[f.status]+'">'+f.status.toUpperCase()+'</span>';
+    return '<div class="stat-line"><span class="stat-name">'+f.namn+' <span style="color:var(--t3);font-size:10px">('+f.typ.replace('fond','')+')</span></span>'+badge+'</div>';
+  }).join('');
+}
+function renderRotation(rot){
+  const lampClass={'grön':'lamp-g','gul':'lamp-y','nära':'lamp-off','av':'lamp-off'};
+  const mvColor={'grön':'var(--g)','gul':'var(--y)','nära':'var(--y)','av':'var(--t3)'};
+  const mvText={'grön':'PÅ','gul':'GUL','nära':'NÄRA','av':'AV'};
+  // Fastighet
+  const fL=document.getElementById('fastLamp'), fS=document.getElementById('fastState'), fM=document.getElementById('fastMv');
+  if(fL){ fL.className='rot-lamp '+(lampClass[rot.fast.state]||'lamp-off'); }
+  if(fS&&rot.fast.txt){
+    let txt=rot.fast.txt;
+    if(rot.fastYtd!=null) txt+=' · Index '+(rot.fastYtd*100).toFixed(0)+'% YTD';
+    fS.textContent=txt;
+  }
+  if(fM){ fM.textContent=mvText[rot.fast.state]||'AV'; fM.style.color=mvColor[rot.fast.state]||'var(--t3)'; fM.className='rot-mv'; }
+  // Småbolag
+  const sL=document.getElementById('smallLamp'), sS=document.getElementById('smallState'), sM=document.getElementById('smallMv'), sMl=document.getElementById('smallMl');
+  if(sL){ sL.className='rot-lamp '+(lampClass[rot.small.state]||'lamp-off'); }
+  if(sS){
+    if(rot.spi!=null&&rot.omx!=null){
+      const diff=((rot.spi-rot.omx)*100).toFixed(0);
+      sS.textContent='OMXSPI '+(rot.spi*100).toFixed(0)+'% vs OMXS30 '+(rot.omx*100).toFixed(0)+'%. '+(rot.spi>rot.omx?'Småbolag leder (+'+diff+' pe).':'Storbolag leder ('+diff+' pe).');
+    }
+  }
+  if(sM){ sM.textContent=mvText[rot.small.state]||'AV'; sM.style.color=mvColor[rot.small.state]||'var(--t3)'; }
+  if(sMl){ sMl.textContent=(rot.spi!=null&&rot.omx!=null&&rot.spi>rot.omx)?'SPI>OMX30':'SPI<OMX30'; }
+}
+
+/* ============================================================
+   CSV-INLÄSNING (metod A) — markera dagens filer, nyaste per typ
+   ============================================================ */
+function num(s){
+  if(s==null) return null;
+  s=String(s).trim().replace(/\u00a0/g,'').replace(/ /g,'').replace(/%/g,'').replace(/−/g,'-').replace(/,/g,'.');
+  if(s===''||s==='-'||s==='#VALUE!') return null;
+  const v=parseFloat(s); return isNaN(v)?null:v;
+}
+function parseCSV(text){
+  const rows=[]; let row=[],field='',inQ=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(inQ){ if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else inQ=false; } else field+=c; }
+    else { if(c==='"')inQ=true; else if(c===','){row.push(field);field='';}
+      else if(c==='\n'){row.push(field);rows.push(row);row=[];field='';}
+      else if(c==='\r'){} else field+=c; }
+  }
+  if(field!==''||row.length){row.push(field);rows.push(row);}
+  return rows;
+}
+function colIdx(h,name){for(let i=0;i<h.length;i++)if(h[i].trim().toLowerCase()===name.toLowerCase())return i;return -1;}
+function pickLatest(files){
+  const byType={}, map=[[/aktier/i,'aktier'],[/fond/i,'fond'],[/index/i,'index'],[/manuellt/i,'manuellt'],[/cert/i,'cert']];
+  for(const f of files){
+    const dm=f.name.match(/(\d{4}-\d{2}-\d{2})/); const date=dm?dm[1]:'0000-00-00';
+    let type=null; for(const [re,t] of map){if(re.test(f.name)){type=t;break;}}
+    if(!type) continue;
+    if(!byType[type]||date>byType[type].date) byType[type]={...f,date,type};
+  }
+  return byType;
+}
+function parseManuellt(text){const rows=parseCSV(text),m={};
+  for(const r of rows)if(r.length>=2&&r[0].trim())m[r[0].trim()]=r[1].trim();
+  return {datum:m['Datum']||null,cash:num(m['Cash']),uttagYTD:num(m['UttagYTD']),ib:num(m['IB']),totalt:num(m['TotaltKonto'])};}
+function parseAktier(text){const rows=parseCSV(text),h=rows[0],iRsi=colIdx(h,'RSI14'),iStat=colIdx(h,'Status'),out=[];
+  for(let k=1;k<rows.length;k++){const r=rows[k];if(!r[0]||!r[0].trim())continue;
+    out.push({namn:r[0].trim(),rsi:iRsi>=0?num(r[iRsi]):null,status:iStat>=0?(r[iStat]||'').trim():''});}
+  return out;}
+function parseFond(text){const rows=parseCSV(text),h=rows[0],iNamn=colIdx(h,'Fond'),iTyp=colIdx(h,'FondTyp'),iStat=colIdx(h,'Status'),out=[];
+  for(let k=1;k<rows.length;k++){const r=rows[k];if(iNamn<0||!r[iNamn]||!r[iNamn].trim())continue;
+    out.push({namn:r[iNamn].trim(),typ:iTyp>=0?(r[iTyp]||'').trim():'',status:iStat>=0?(r[iStat]||'').trim():''});}
+  return out;}
+function parseIndex(text){const rows=parseCSV(text),idx={};let hi=-1;
+  for(let k=0;k<rows.length;k++)if(rows[k][0]&&rows[k][0].trim()==='Namn'){hi=k;break;}
+  const h=hi>=0?rows[hi]:rows[0],cYtd=colIdx(h,'i år'),cSen=colIdx(h,'Senast');
+  for(let k=(hi>=0?hi+1:1);k<rows.length;k++){const r=rows[k];if(!r[0]||!r[0].trim())continue;
+    idx[r[0].trim()]={senast:num(r[cSen]),ytd:num(r[cYtd])};}
+  return idx;}
+function computeKPIs(m){if(!m||m.ib==null||m.totalt==null)return null;
+  return {ytdBrutto:(m.totalt-m.ib+(m.uttagYTD||0))/m.ib,ytdNetto:(m.totalt-m.ib)/m.ib,
+    cashPct:m.cash!=null?m.cash/m.totalt:null,totalt:m.totalt,cash:m.cash,
+    gainBrutto:(m.totalt-m.ib+(m.uttagYTD||0)),gainNetto:(m.totalt-m.ib)};}
+function rotationSignals(idx){
+  const r=k=>idx[k]&&idx[k].senast!=null?idx[k].senast:null, y=k=>idx[k]&&idx[k].ytd!=null?idx[k].ytd:null;
+  const ranta=r('10-års ränta'),fastYtd=y('Fastigheter'),spi=y('OMX Stockholm PI'),omx=y('OMX Stockholm 30');
+  let fast={state:'av',txt:''};
+  if(ranta!=null){
+    if(ranta<2.5&&fastYtd!=null&&fastYtd>0)fast={state:'grön',txt:'Bekräftad vändning'};
+    else if(ranta<2.5)fast={state:'gul',txt:'Förutsättning på plats'};
+    else{const d=ranta-2.5;fast={state:d<0.5?'nära':'av',txt:'Ränta '+ranta+'% ('+d.toFixed(1)+' pe från tröskel)'};}
+  }
+  let small={state:'av',txt:''};
+  if(spi!=null&&omx!=null) small=spi>omx?{state:'grön',txt:'OMXSPI slår OMXS30'}:{state:'av',txt:'Storbolag leder'};
+  return {fast,small,ranta,fastYtd,spi,omx,vix:r('TRACK VIX SG'),usdsek:r('USD/SEK'),omxYtd:omx};
+}
+
+/* --- DOM-uppdatering vid uppladdning --- */
+function fmtPct(v){return (v>=0?'+':'')+(v*100).toFixed(1).replace('.',',')+'%';}
+function fmtKr(v){return Math.round(v).toLocaleString('sv-SE');}
+
+/* --- Banner-logik: sammanfattar allt (≠ = rött) --- */
+function renderBanner(aktier, fonder, rot){
+  const issues=[]; // {sev:'röd'|'gul', txt}
+  // Aktier: ≠-konflikter (röd) + aktiva signaler (gul)
+  for(const a of (aktier||[])){
+    const r=resolveHolding(a.status,a.rsi);
+    if(r.conflict) issues.push({sev:'röd',txt:a.namn+' ≠ (din '+a.status.toLowerCase()+' vs köp/sälj-signal)'});
+    else if(!a.status && r.statusClass!=='neutral'){
+      const lbl = r.statusClass==='köp'?'köpläge':'överköpt';
+      issues.push({sev:'gul',txt:a.namn+' '+lbl+(a.rsi?' (RSI '+Math.round(a.rsi)+')':'')});
+    }
+  }
+  // Rotation: grön tänd = röd (agera nu), nära/gul = gul
+  if(rot){
+    if(rot.fast.state==='grön') issues.push({sev:'röd',txt:'Fastighet: bekräftad vändning'});
+    else if(rot.fast.state==='gul'||rot.fast.state==='nära') issues.push({sev:'gul',txt:'Fastighet nära tröskel'});
+    if(rot.small.state==='grön') issues.push({sev:'röd',txt:'Småbolag: rotation tänd'});
+  }
+  const reds=issues.filter(i=>i.sev==='röd'), yellows=issues.filter(i=>i.sev==='gul');
+  const banner=document.getElementById('banner');
+  const bh=document.getElementById('banner-h'), bs=document.getElementById('banner-s');
+  if(!banner) return;
+  let cls,dot,head;
+  if(reds.length){ cls='sb-alert'; dot='var(--r)'; head=reds.length+' sak'+(reds.length>1?'er':'')+' kräver uppmärksamhet'; }
+  else if(yellows.length){ cls='sb-warn'; dot='var(--y)'; head=yellows.length+' sak'+(yellows.length>1?'er':'')+' att kolla idag'; }
+  else { cls='sb-ok'; dot='var(--g)'; head='Allt lugnt'; }
+  banner.className='status-banner '+cls;
+  banner.querySelector('.sb-dot').style.background=dot;
+  banner.querySelector('.sb-dot').style.boxShadow='0 0 8px '+dot;
+  if(bh) bh.textContent=head;
+  const all=[...reds,...yellows].slice(0,3).map(i=>i.txt);
+  if(bs) bs.textContent=all.length?all.join(' · '):'Inga aktiva signaler';
+}
+
+/* ============================================================
+   DATAKÄLLOR — publicerade Google Sheets (fliker som CSV)
+   Byt/uppdatera URL:er här om flikarna publiceras om.
+   ============================================================ */
+const SHEET_URLS = {
+  aktier:   'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjMpa4IQXFHM63YX6hZQS1t1o6zmMDrmCt62Tp75-DL1xJ2ja43iUbqMxh36WVbcRQi_mjB6xtQOcA/pub?gid=1780579688&single=true&output=csv',
+  fond:     'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjMpa4IQXFHM63YX6hZQS1t1o6zmMDrmCt62Tp75-DL1xJ2ja43iUbqMxh36WVbcRQi_mjB6xtQOcA/pub?gid=654816931&single=true&output=csv',
+  index:    'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjMpa4IQXFHM63YX6hZQS1t1o6zmMDrmCt62Tp75-DL1xJ2ja43iUbqMxh36WVbcRQi_mjB6xtQOcA/pub?gid=383886314&single=true&output=csv',
+  manuellt: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjMpa4IQXFHM63YX6hZQS1t1o6zmMDrmCt62Tp75-DL1xJ2ja43iUbqMxh36WVbcRQi_mjB6xtQOcA/pub?gid=1674815474&single=true&output=csv'
+};
+
+/* Gemensam bearbetning — används av både fetch och uppladdning.
+   latest: {aktier:{text,date}, fond:{...}, index:{...}, manuellt:{...}} */
+function processData(latest, sourceLabel){
+  const info=document.getElementById('uploadInfo');
+  const got=Object.keys(latest);
+  if(!got.length){ if(info) info.innerHTML='<span class="upload-warn">Ingen data hittades.</span>'; return; }
+  let dataDate='—';
+  if(latest.manuellt){
+    const k=computeKPIs(parseManuellt(latest.manuellt.text));
+    if(k){
+      document.querySelector('[data-kpi="ytd"]').textContent=fmtPct(k.ytdBrutto);
+      document.querySelector('[data-kpi="ytd-sub"]').textContent=(k.gainNetto>=0?'+':'')+fmtKr(k.gainNetto);
+      document.querySelector('[data-kpi="port"]').textContent=(k.totalt/1e6).toFixed(2).replace('.',',')+'M';
+      if(k.cashPct!=null){
+        document.querySelector('[data-kpi="cash"]').textContent=(k.cashPct*100).toFixed(1).replace('.',',')+'%';
+        document.querySelector('[data-kpi="cash-sub"]').textContent=fmtKr(k.cash)+' redo';
+      }
+      if(latest.manuellt.date>dataDate) dataDate=latest.manuellt.date;
+    }
+  }
+  let rotData=null, aktierData=null, fonderData=null;
+  if(latest.index){
+    rotData=rotationSignals(parseIndex(latest.index.text));
+    const set=(sel,v)=>{const el=document.querySelector(sel);if(el&&v!=null)el.textContent=v;};
+    if(rotData.omxYtd!=null) set('[data-mkt="omx"]',fmtPct(rotData.omxYtd));
+    if(rotData.ranta!=null) set('[data-mkt="ranta"]',rotData.ranta.toFixed(2).replace('.',',')+'%');
+    if(rotData.usdsek!=null) set('[data-mkt="usdsek"]',rotData.usdsek.toFixed(2).replace('.',','));
+    if(rotData.vix!=null) set('[data-mkt="vix"]',rotData.vix.toFixed(2).replace('.',','));
+    if(rotData.fastYtd!=null) set('[data-mkt="fast"]',fmtPct(rotData.fastYtd));
+    renderRotation(rotData);
+    if(latest.index.date>dataDate) dataDate=latest.index.date;
+  }
+  if(latest.aktier){
+    aktierData=parseAktier(latest.aktier.text);
+    renderStocks(aktierData);
+    if(latest.aktier.date>dataDate) dataDate=latest.aktier.date;
+  }
+  if(latest.fond){
+    fonderData=parseFond(latest.fond.text);
+    renderFunds(fonderData);
+    if(latest.fond.date>dataDate) dataDate=latest.fond.date;
+  }
+  renderBanner(aktierData, fonderData, rotData);
+  if(dataDate==='—') dataDate=new Date().toISOString().slice(0,10);
+  if(info) info.innerHTML=(sourceLabel||'Inläst')+': <b>'+got.join(', ')+'</b> · data per '+dataDate;
+  const foot=document.getElementById('footdate'); if(foot) foot.textContent='Control Tower · data '+dataDate;
+}
+
+/* FETCH — hämtar de fyra flikarna vid sidladdning (körs i webbläsaren).
+   Datum tas ur Manuellt-filens Datum-fält när det finns, annars idag. */
+async function fetchAllSheets(){
+  const info=document.getElementById('uploadInfo');
+  if(info) info.innerHTML='Hämtar färsk data från Google Sheets…';
+  const types=Object.keys(SHEET_URLS);
+  const latest={};
+  const results=await Promise.allSettled(types.map(async t=>{
+    const res=await fetch(SHEET_URLS[t],{cache:'no-store'});
+    if(!res.ok) throw new Error(t+' HTTP '+res.status);
+    return {t, text:await res.text()};
+  }));
+  let failed=[];
+  results.forEach((r,i)=>{
+    const t=types[i];
+    if(r.status==='fulfilled'){
+      // datum ur Manuellt om möjligt, annars dagens
+      let d=new Date().toISOString().slice(0,10);
+      if(t==='manuellt'){ const mm=r.value.text.match(/Datum[,;"\s]+(\d{4}-\d{2}-\d{2})/); if(mm) d=mm[1]; }
+      latest[t]={text:r.value.text, date:d};
+    } else failed.push(t);
+  });
+  if(Object.keys(latest).length){
+    processData(latest, 'Hämtat');
+    if(failed.length && info){ info.innerHTML+=' <span class="upload-warn">(kunde ej hämta: '+failed.join(', ')+')</span>'; }
+  } else if(info){
+    info.innerHTML='<span class="upload-warn">Kunde inte hämta data. Kontrollera länkarna eller ladda upp filer manuellt.</span>';
+  }
+}
+
+document.getElementById('fileInput').addEventListener('change', async (e)=>{
+  const fileList=[...e.target.files];
+  if(!fileList.length) return;
+  const files=await Promise.all(fileList.map(async f=>({name:f.name,text:await f.text()})));
+  const latest=pickLatest(files);
+  processData(latest, 'Inläst');
+});
+
+// Hämta automatiskt vid sidladdning (fetch primärt, uppladdning som reserv)
+fetchAllSheets();
+
+</script>
+</body>
+</html>
