@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Portföljdashboard – Mattias</title>
+<style>
+:root{--bg:#0A0C10;--bg2:#111318;--bg3:#181C23;--bg4:#1E2330;--b:#252B38;--b2:#3A4358;--t:#E8ECF4;--t2:#C8D0E0;--t3:#9AA3B8;--g:#2ECC8A;--gd:#1A5C3E;--gb:#0D2B1E;--r:#FF4D6B;--rd:#8C1E2E;--rb:#2B0D14;--y:#F5B942;--yd:#7A5410;--yb:#2B1E07;--bl:#4A9EFF;--bld:#1A3D7A;--blb:#0D1E3A;--rad:8px;--rads:5px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--t);font-family:-apple-system,'Segoe UI',sans-serif;font-size:14px;min-height:100%}
+.hdr{background:var(--bg2);border-bottom:1px solid var(--b);padding:11px 14px;position:sticky;top:0;z-index:99}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.hdr-lbl{font-size:10px;color:var(--t3);letter-spacing:.12em;text-transform:uppercase;font-family:'Courier New',monospace}
+.hdr-name{font-size:14px;font-weight:700;color:var(--t)}
+.hdr-val{font-size:17px;font-weight:800;text-align:right;color:var(--t)}
+.hdr-ytd{font-size:11px;color:var(--g);font-family:'Courier New',monospace;text-align:right;margin-top:1px;font-weight:700}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:2px}
+.tb{padding:7px 2px;font-size:11px;font-weight:700;border:none;cursor:pointer;background:transparent;color:var(--t2);letter-spacing:.04em;text-transform:uppercase;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
+.tb.on{color:var(--t);border-bottom:2px solid var(--bl)}
+.pg{display:none;padding:13px;max-width:860px;margin:0 auto;padding-bottom:60px}
+.pg.on{display:block}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.mc{background:var(--bg3);border:1px solid var(--b);border-radius:var(--rad);padding:11px 13px}
+.ml{font-size:10px;color:var(--t2);font-family:'Courier New',monospace;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;font-weight:600}
+.mv{font-size:18px;font-weight:800;color:var(--t)}
+.ms{font-size:11px;color:var(--t3);font-family:'Courier New',monospace;margin-top:2px}
+.sc{background:var(--bg3);border:1px solid var(--b);border-radius:var(--rad);padding:13px;margin-bottom:11px}
+.st{font-size:10px;color:var(--t2);font-family:'Courier New',monospace;letter-spacing:.1em;text-transform:uppercase;margin-bottom:11px;font-weight:600}
+.st-big{font-size:13px;color:var(--t);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;padding-bottom:9px;border-bottom:2px solid var(--bl);font-weight:800;display:flex;align-items:center;gap:8px}
+.st-big::before{content:"";width:4px;height:14px;background:var(--bl);border-radius:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:11px}
+.pie-w{display:flex;gap:13px;align-items:center}
+.pie{width:88px;height:88px;border-radius:50%;flex-shrink:0}
+.lr{display:flex;align-items:center;gap:5px;margin-bottom:5px;font-size:11px}
+.ld{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.ln{color:var(--t2);flex:1}
+.lp{font-family:'Courier New',monospace;font-size:11px;color:var(--t2);width:34px;text-align:right;font-weight:600}
+.br{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.blbl{font-size:11px;color:var(--t2);width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bbg{flex:1;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.bfil{height:100%;border-radius:3px}
+.bv{font-size:11px;font-family:'Courier New',monospace;width:44px;text-align:right;flex-shrink:0;color:var(--t);font-weight:600}
+.swg{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.sw{border-radius:var(--rad);padding:10px 11px;border-left:3px solid}
+.swt{font-size:10px;font-family:'Courier New',monospace;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;font-weight:700}
+.swi{font-size:11px;margin-bottom:3px;line-height:1.35;padding-left:9px;position:relative}
+.swi::before{content:"›";position:absolute;left:0;font-weight:700}
+.ss{background:var(--gb);border-color:var(--g);color:#A8F0CE}
+.sw2{background:var(--rb);border-color:var(--r);color:#FFB0BC}
+.so{background:var(--blb);border-color:var(--bl);color:#A8D4FF}
+.sth{background:var(--yb);border-color:var(--y);color:#FFD98A}
+.mr{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--b)}
+.mr:last-child{border-bottom:none}
+.mn{font-size:12px;font-weight:600;color:var(--t)}
+.mnote{font-size:11px;color:var(--t3);margin-top:2px}
+.mval{font-family:'Courier New',monospace;font-size:12px;font-weight:700;text-align:right;color:var(--t)}
+.mch{font-size:10px;font-family:'Courier New',monospace;text-align:right;margin-top:2px;font-weight:600}
+.ir{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.iname{font-size:11px;width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t2)}
+.ibg{flex:1;height:7px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.ifil{height:100%;border-radius:3px}
+.ipct{font-size:11px;font-family:'Courier New',monospace;width:44px;text-align:right;flex-shrink:0;font-weight:700}
+.ts{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{text-align:left;padding:6px 5px;font-size:10px;color:var(--t2);font-family:'Courier New',monospace;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--b2);font-weight:700;white-space:nowrap;cursor:pointer;user-select:none}
+.tbl th:hover{color:var(--t);background:rgba(74,158,255,.05)}
+.tbl th.r,.tbl td.r{text-align:right}
+.tbl th.c,.tbl td.c{text-align:center}
+.tbl td{padding:7px 5px;border-bottom:1px solid var(--b);white-space:nowrap;color:var(--t)}
+.tbl tr:last-child td{border-bottom:none}
+.sort-ind{margin-left:3px;color:var(--bl);font-weight:900;font-size:10px}
+.sub{font-size:11px;color:var(--t3);font-family:'Courier New',monospace;margin-top:1px;font-weight:500}
+.badge{display:inline-block;font-size:9px;padding:2px 7px;border-radius:20px;font-weight:700;letter-spacing:.03em;font-family:'Courier New',monospace}
+.bg-bg{background:var(--gb);color:var(--g);border:1px solid var(--gd)}
+.bg-r{background:var(--rb);color:var(--r);border:1px solid var(--rd)}
+.bg-y{background:var(--yb);color:var(--y);border:1px solid var(--yd)}
+.bg-b{background:var(--blb);color:var(--bl);border:1px solid var(--bld)}
+.bg-x{background:var(--bg4);color:var(--t2);border:1px solid var(--b2)}
+.stabs{display:flex;gap:4px;margin-bottom:11px;flex-wrap:wrap}
+.stb{padding:6px 11px;font-size:11px;font-weight:700;border:1px solid var(--b2);border-radius:var(--rads);cursor:pointer;background:transparent;color:var(--t2);transition:all .15s}
+.stb.on{background:var(--bg4);color:var(--t);border-color:var(--bl)}
+.spg{display:none}
+.spg.on{display:block}
+.ar{display:flex;align-items:flex-start;gap:9px;padding:10px 0;border-bottom:1px solid var(--b)}
+.ar:last-child{border-bottom:none}
+.anum{width:22px;height:22px;border-radius:50%;background:var(--bg4);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'Courier New',monospace;color:var(--t2);flex-shrink:0;margin-top:1px;font-weight:700}
+.abody{flex:1}
+.aname{font-size:13px;font-weight:700;margin-bottom:2px;color:var(--t)}
+.areason{font-size:11px;color:var(--t2)}
+.aright{text-align:right;flex-shrink:0}
+.akr{font-size:11px;color:var(--t2);font-family:'Courier New',monospace;margin-top:3px;font-weight:600}
+.rrow{margin-bottom:10px}
+.rh{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;color:var(--t);font-weight:600}
+.rbg{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.rfil{height:100%;border-radius:3px}
+.rnote{font-size:11px;font-family:'Courier New',monospace;color:var(--t2);margin-top:3px}
+.notice{background:var(--bg4);border:1px solid var(--b2);border-radius:var(--rads);padding:8px 11px;font-size:11px;color:var(--t2);font-family:'Courier New',monospace;margin-bottom:11px}
+.ccg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:9px}
+.cc{background:var(--bg4);border-radius:var(--rads);padding:8px 9px}
+.ccl{font-size:10px;color:var(--t2);font-family:'Courier New',monospace;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px;font-weight:600}
+.ccv{font-size:13px;font-weight:800;color:var(--t)}
+.wbox{background:var(--yb);border:1px solid var(--yd);border-radius:var(--rads);padding:9px 13px;font-size:11px;color:#FFE0A0;margin-top:9px;line-height:1.45}
+.secr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--b);font-size:12px;color:var(--t)}
+.secr:last-child{border-bottom:none}
+.pos{color:var(--g)}.neg{color:var(--r)}.wrn{color:var(--y)}.blu{color:var(--bl)}
+.chart-w{overflow:hidden;width:100%}
+.combo{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.combo-col{}
+.combo-h{font-size:10px;font-family:'Courier New',monospace;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px;font-weight:700}
+.combo-h.h-pos{color:var(--g)}
+.combo-h.h-neg{color:var(--r)}
+.combo-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--b);font-size:12px}
+.combo-row:last-child{border-bottom:none}
+.combo-row strong{color:var(--t);font-weight:600}
+.combo-pct{font-family:'Courier New',monospace;font-weight:700}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:11px}
+.sg-cell{background:var(--bg4);border-radius:var(--rads);padding:9px 10px;text-align:left}
+.sg-lbl{font-size:9px;font-family:'Courier New',monospace;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;font-weight:600}
+.sg-val{font-size:14px;font-weight:800;color:var(--t)}
+.sg-val.pos{color:var(--g)}
+.sg-val.neg{color:var(--r)}
+.sg-sub{font-size:10px;color:var(--t2);font-family:'Courier New',monospace;margin-top:1px}
+.signal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sig-card{background:var(--bg4);border-radius:var(--rads);padding:10px 11px;border-left:3px solid}
+.sig-up{border-color:var(--g)}
+.sig-down{border-color:var(--r)}
+.sig-top{border-color:var(--bl)}
+.sig-bottom{border-color:var(--y)}
+.sig-title{font-size:10px;font-family:'Courier New',monospace;letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px;font-weight:700}
+.sig-up .sig-title{color:var(--g)}
+.sig-down .sig-title{color:var(--r)}
+.sig-top .sig-title{color:var(--bl)}
+.sig-bottom .sig-title{color:var(--y)}
+.sig-item{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;color:var(--t)}
+.sig-item .sig-val{font-family:'Courier New',monospace;font-weight:600}
+.sig-empty{font-size:10px;color:var(--t3);font-style:italic;padding:3px 0}
+@media(max-width:500px){
+  .two{grid-template-columns:1fr}
+  .blbl{width:90px}
+  .iname{width:105px;font-size:10px}
+  .hdr-val{font-size:15px}
+  .swg{grid-template-columns:1fr 1fr}
+  .summary-grid{grid-template-columns:1fr 1fr}
+  .signal-grid{grid-template-columns:1fr}
+  .combo{gap:8px}
+}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="hdr-lbl">Portföljdashboard · Mattias</div>
+      <div class="hdr-name" id="hdr-date">Uppdaterad —</div>
+    </div>
+    <div>
+      <div class="hdr-val" id="hdr-total">—</div>
+      <div class="hdr-ytd" id="hdr-ytd">—</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tb on" onclick="go(0)">Översikt</button>
+    <button class="tb" onclick="go(1)">Innehav</button>
+    <button class="tb" onclick="go(2)">Beslut</button>
+    <button class="tb" onclick="go(3)">Trend</button>
+  </div>
+  <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <label for="csvup" style="font-size:11px;font-weight:700;padding:5px 12px;border:1px solid var(--bl);border-radius:5px;color:var(--bl);cursor:pointer;background:var(--blb)">⬆ Ladda upp CSV-filer</label>
+    <input id="csvup" type="file" accept=".csv" multiple style="display:none">
+    <span id="upstatus" style="font-size:10px;color:var(--t3);font-family:'Courier New',monospace"></span>
+  </div>
+</div>
+<div id="p0" class="pg on"></div>
+<div id="p1" class="pg"></div>
+<div id="p2" class="pg"></div>
+<div id="p3" class="pg"></div>
+<script>
+const F = n => Math.round(n).toLocaleString('sv-SE');
+const P = (n,d=1) => n==null ? '—' : (n>=0?'+':'')+parseFloat(n).toFixed(d)+'%';
+const PC = n => n==null ? 'var(--t3)' : n>=0 ? 'var(--g)' : 'var(--r)';
+const BCE = {'Sälj':'bg-r','Minska':'bg-y','Behåll':'bg-bg','Öka':'bg-b','Bevaka':'bg-x','Behåll/Öka':'bg-b'};
+const BST = {'Nu':'bg-r','Planerat':'bg-y','Köp':'bg-b','Avvakta':'bg-x'};
+
+const D = {
+  upd: '2026-05-30', idxUpd: '2026-06-02',
+  konto: 4243605, portf: 3659481, ytdKr: 172589, ytdP: 11.61,
+  nettoKr: -127411, nettoP: 4.24,
+  cash: 727091, uttag: 300000,
+  allok: [
+    {n:'Fonder',v:1935075,p:52.88,c:'#4A9EFF'},
+    {n:'Aktier',v:823104,p:22.49,c:'#2ECC8A'},
+    {n:'Cash',v:727091,p:19.87,c:'#FF4D6B'},
+    {n:'Certifikat',v:174210,p:4.76,c:'#F5B942'},
+  ],
+  makro: [
+    {n:'10-årig ränta',v:'2,70%',ch:'−12%/m',d:1,note:'Sjunker → positivt för fastigheter'},
+    {n:'USD/SEK',v:'9,29',ch:'+0,8%/m',d:0,note:'Valutarisk i US-tillgångar'},
+    {n:'VIX',v:'2,81',ch:'−14%/m',d:1,note:'Fallande volatilitet'},
+    {n:'Fastighetsindex',v:'2 803',ch:'−8%/år',d:-1,note:'Fortfarande negativt — bevaka'},
+    {n:'Nasdaq 100',v:'30 514',ch:'+10%/m',d:1,note:'Du underviktar teknik'},
+  ],
+  aktier: [
+    {n:'Investor B',mv:265825,ik:200473,skK:65352,skP:32.60,ytd:14.59,p1v:-1.06,p1m:3.67,rsi:56.06,rat:'Neutral',rN:0,br:'Finans',la:'Sverige',close:379.75,yh:380.75,s20:373.95},
+    {n:'Atlas Copco A',mv:224640,ik:225420,skK:-780,skP:-0.35,ytd:3.97,p1v:-3.87,p1m:2.55,rsi:43.12,rat:'Buy',rN:1,br:'Industri',la:'Sverige',close:172.8,yh:178.0,s20:177.04},
+    {n:'SAAB B',mv:67025,ik:32956,skK:34069,skP:103.38,ytd:-1.40,p1v:1.17,p1m:-3.44,rsi:45.63,rat:'Neutral',rN:0,br:'Industri',la:'Sverige',close:536.2,yh:585.0,s20:536.62},
+    {n:'Plejd',mv:53350,ik:38689,skK:14661,skP:37.89,ytd:50.07,p1v:-1.66,p1m:7.34,rsi:56.46,rat:'Strong buy',rN:2,br:'Industri',la:'Sverige',close:1067.0,yh:1080.0,s20:1055.15},
+    {n:'Berkshire B',mv:43634,ik:46183,skK:-2549,skP:-5.52,ytd:-6.12,p1v:0.0,p1m:-1.01,rsi:40.32,rat:'Buy',rN:1,br:'Finans',la:'Nordamerika',close:470.29,yh:477.29,s20:478.68},
+    {n:'Lundin Mining',mv:31191,ik:25193,skK:5998,skP:23.81,ytd:40.22,p1v:7.29,p1m:21.54,rsi:62.31,rat:'Buy',rN:1,br:'Råvaror',la:'Sverige',close:281.0,yh:281.2,s20:259.66},
+    {n:'Sandvik',mv:18465,ik:17672,skK:793,skP:4.49,ytd:22.85,p1v:-4.35,p1m:-1.81,rsi:45.25,rat:'Neutral',rN:0,br:'Industri',la:'Sverige',close:369.3,yh:380.2,s20:374.63},
+    {n:'Lundin Gold',mv:17766,ik:21291,skK:-3525,skP:-16.56,ytd:-24.75,p1v:0.82,p1m:-4.48,rsi:41.50,rat:'Buy',rN:1,br:'Råvaror',la:'Sverige',close:592.2,yh:613.0,s20:606.2},
+    {n:'MilDef Group',mv:18115,ik:21344,skK:-3229,skP:-15.13,ytd:50.96,p1v:-3.80,p1m:5.63,rsi:55.13,rat:'Strong buy',rN:2,br:'Teknik',la:'Sverige',close:181.15,yh:192.15,s20:176.87},
+    {n:'Boliden',mv:20034,ik:20695,skK:-661,skP:-3.19,ytd:10.84,p1v:4.95,p1m:20.50,rsi:60.34,rat:'Neutral',rN:0,br:'Råvaror',la:'Sverige',close:572.4,yh:585.6,s20:532.09},
+    {n:'American Express',mv:14545,ik:14029,skK:516,skP:3.68,ytd:-15.14,p1v:0.08,p1m:-3.37,rsi:48.79,rat:'Buy',rN:1,br:'Finans',la:'Nordamerika',close:313.54,yh:319.24,s20:313.78},
+    {n:'ShaMaran Petroleum',mv:13600,ik:16100,skK:-2500,skP:-15.53,ytd:-11.91,p1v:4.67,p1m:0.72,rsi:60.73,rat:'Buy',rN:1,br:'Energi',la:'Sverige',close:1.39,yh:1.4,s20:1.33},
+    {n:'Swedish Logistic Prop.',mv:10350,ik:10046,skK:304,skP:3.03,ytd:-1.57,p1v:0.0,p1m:7.52,rsi:58.60,rat:'Buy',rN:1,br:'Fastighet',la:'Sverige',close:40.75,yh:42.9,s20:39.36},
+    {n:'Cloetta',mv:9540,ik:10040,skK:-500,skP:-4.98,ytd:18.07,p1v:-7.65,p1m:2.36,rsi:34.38,rat:'Strong buy',rN:2,br:'Konsument',la:'Sverige',close:47.7,yh:50.5,s20:51.49},
+    {n:'Studsvik',mv:7565,ik:10210,skK:-2645,skP:-25.90,ytd:-17.90,p1v:-8.06,p1m:-16.82,rsi:29.35,rat:'No rating',rN:0,br:'Industri',la:'Sverige',close:222.5,yh:236.0,s20:261.85},
+    {n:'Berner Industrier B',mv:7459,ik:10030,skK:-2571,skP:-25.63,ytd:-20.23,p1v:0.65,p1m:-2.54,rsi:40.41,rat:'No rating',rN:0,br:'Industri',la:'Sverige',close:76.9,yh:82.3,s20:78.82},
+  ],
+  fonder: [
+    {n:'AuAg Silver Bullet A',typ:'Råvarufond',mv:488930,ik:250970,skP:94.82,p1m:-6.3,ytd:6.9,p1v:-6.0,act:'Minska',bank:'SAVR'},
+    {n:'AuAg Gold Rush A',typ:'Råvarufond',mv:250109,ik:200000,skP:25.05,p1m:-8.5,ytd:-0.9,p1v:-3.0,act:'Behåll',bank:'SAVR'},
+    {n:'Finserve Global Security',typ:'Globalfond',mv:141280,ik:100000,skP:41.28,p1m:-0.3,ytd:15.7,p1v:5.0,act:'Behåll',bank:'SAVR'},
+    {n:'AuAg Essential Metals A',typ:'Råvarufond',mv:144364,ik:90000,skP:60.40,p1m:-3.1,ytd:17.4,p1v:-2.0,act:'Sälj',bank:'SAVR'},
+    {n:'Aktiespararna Aktiv A',typ:'Amerikafond',mv:114890,ik:100000,skP:14.89,p1m:null,ytd:4.6,p1v:0.0,act:'Behåll',bank:'Alpcot'},
+    {n:'Avanza Global',typ:'Globalfond',mv:173491,ik:154997,skP:11.93,p1m:5.4,ytd:8.5,p1v:1.0,act:'Behåll',bank:'Avanza'},
+    {n:'Swedbank Robur Technology A',typ:'Teknikfond',mv:76985,ik:50000,skP:53.97,p1m:11.0,ytd:25.3,p1v:1.0,act:'Öka',bank:'SAVR'},
+    {n:'Alpcot Equities D SEK',typ:'Globalfond',mv:70952,ik:50000,skP:0.0,p1m:null,ytd:24.6,p1v:0.0,act:'Behåll',bank:'Alpcot'},
+    {n:'Avanza Zero',typ:'Indexfond',mv:63744,ik:50000,skP:27.49,p1m:1.1,ytd:10.0,p1v:4.0,act:'Behåll',bank:'Avanza'},
+    {n:'AMF Aktiefond Nordamerika',typ:'Amerikafond',mv:62991,ik:50000,skP:25.98,p1m:6.4,ytd:9.0,p1v:0.0,act:'Behåll',bank:'SAVR'},
+    {n:'Swedbank Robur Globalfond A',typ:'Globalfond',mv:60444,ik:50000,skP:20.89,p1m:5.7,ytd:9.3,p1v:1.0,act:'Behåll',bank:'SAVR'},
+    {n:'BMC Global Select R SEK',typ:'Globalfond',mv:57555,ik:50000,skP:15.11,p1m:3.6,ytd:6.8,p1v:-1.0,act:'Behåll',bank:'SAVR'},
+    {n:'AuAg Precious Core A',typ:'Råvarufond',mv:42268,ik:22589,skP:87.12,p1m:5.0,ytd:13.6,p1v:1.0,act:'Sälj',bank:'SAVR'},
+    {n:'Spiltan Aktiefond Småland',typ:'Specialfond',mv:31971,ik:36262,skP:-11.83,p1m:0.4,ytd:-3.2,p1v:4.0,act:'Bevaka',bank:'SAVR'},
+    {n:'Cliens Small & Micro Cap A',typ:'Småbolagsfond',mv:25985,ik:25000,skP:3.94,p1m:1.1,ytd:1.7,p1v:3.0,act:'Behåll',bank:'SAVR'},
+    {n:'Cliens Småbolag A',typ:'Småbolagsfond',mv:23729,ik:25000,skP:-5.08,p1m:2.3,ytd:1.0,p1v:4.0,act:'Behåll',bank:'SAVR'},
+    {n:'Avanza Healthcare',typ:'Hälsovårdsfond',mv:24681,ik:25000,skP:-1.28,p1m:2.4,ytd:-1.1,p1v:2.0,act:'Bevaka',bank:'Avanza'},
+    {n:'Avanza Småbolag',typ:'Småbolagsfond',mv:18586,ik:15537,skP:19.62,p1m:2.0,ytd:3.5,p1v:3.0,act:'Behåll',bank:'Avanza'},
+    {n:'Avanza Tech Solutions',typ:'Teknikfond',mv:12359,ik:6346,skP:94.76,p1m:11.6,ytd:27.3,p1v:0.0,act:'Behåll',bank:'Avanza'},
+    {n:'PLUS Hälsovård Sverige Index',typ:'Hälsovårdsfond',mv:11046,ik:11852,skP:-6.80,p1m:2.4,ytd:2.6,p1v:4.0,act:'Bevaka',bank:'SAVR'},
+    {n:'Avanza Fastighet',typ:'Fastighetsfond',mv:11563,ik:9999,skP:15.63,p1m:-1.0,ytd:1.0,p1v:2.0,act:'Bevaka',bank:'Avanza'},
+    {n:'PLUS Fastigheter Sverige Index',typ:'Fastighetsfond',mv:9461,ik:10291,skP:-8.07,p1m:-2.1,ytd:-4.1,p1v:2.0,act:'Bevaka',bank:'SAVR'},
+    {n:'Strand Småbolagsfond',typ:'Småbolagsfond',mv:8799,ik:11285,skP:-22.03,p1m:-2.6,ytd:-2.4,p1v:1.0,act:'Sälj',bank:'SAVR'},
+    {n:'TIN Ny Teknik A',typ:'Teknikfond',mv:8892,ik:15263,skP:-41.74,p1m:3.6,ytd:-15.4,p1v:4.0,act:'Sälj',bank:'SAVR'},
+  ],
+  cert: [
+    {n:'SILVER AVA',mv:146136,ik:64059,skP:128.13,skK:82077,p1m:3.90,ytd:0.50},
+    {n:'GULD AVA',mv:28074,ik:16738,skP:67.73,skK:11336,p1m:-2.40,ytd:2.60},
+  ],
+  idx: [
+    {n:'Nasdaq 100',ytd:21.0,p1m:10.0,isP:false},
+    {n:'Dow Jones US',ytd:11.0,p1m:5.0,isP:false},
+    {n:'Din portfölj',ytd:11.61,p1m:null,isP:true},
+    {n:'OMX Stockholm 30',ytd:9.0,p1m:3.0,isP:false},
+    {n:'Dow Jones Ind.',ytd:6.0,p1m:3.0,isP:false},
+    {n:'OMX Stockholm PI',ytd:5.0,p1m:3.0,isP:false},
+    {n:'DAX',ytd:3.0,p1m:4.0,isP:false},
+  ],
+  hist: [
+    {d:'5 jan',k:4071},{d:'8 jan',k:4130},{d:'16 jan',k:4285},{d:'23 jan',k:4528},
+    {d:'1 feb',k:4475},{d:'8 feb',k:4321},{d:'1 mar',k:4586},{d:'7 mar',k:4397},
+    {d:'14 mar',k:4372},{d:'21 mar',k:4103},{d:'28 mar',k:4061},{d:'4 apr',k:4190},
+    {d:'12 apr',k:4282},{d:'19 apr',k:4361},{d:'25 apr',k:4268},{d:'1 maj',k:4193},
+    {d:'22 maj',k:4225},{d:'30 maj',k:4244},
+  ],
+  swot: {
+    S:['YTD +11,61% — slår OMX30 (+9%)','SAAB +103%, Silver AVA +128%','25% ädelmetaller = aktiv hedge','Cash 727kkr redo att deployas'],
+    W:['Investor B + Atlas = 60% av aktier','Aktier 92,9% Sverige-bias','TIN −42%, Strand −22% ej sålda','4 överlappande AuAg-fonder'],
+    O:['Cash 727 kkr vid sättning','Nasdaq +21% — teknikgap att fylla','Fastigheter: bevaka vändning','Småbolag historiskt undervärderat'],
+    T:['Underperformar Nasdaq med 9,4pp','Silver 14% — hög volatilitet','USD/SEK 9,29 — valutarisk','Geopolitik → exportbolag'],
+  },
+  actions: [
+    {p:1,a:'Sälj TIN Ny Teknik',r:'−42%, ingen katalysator',s:'Nu',kr:'8 891'},
+    {p:2,a:'Sälj Strand Småbolag',r:'−22%, ersätt vid signal',s:'Nu',kr:'8 799'},
+    {p:3,a:'Sälj AuAg Essential Metals',r:'Överlapp — ta hem +55%',s:'Nu',kr:'139 165'},
+    {p:4,a:'Sälj AuAg Precious Core',r:'Tredubbelt överlapp AuAg',s:'Nu',kr:'41 028'},
+    {p:5,a:'Minska AuAg Silver Bullet',r:'Ta hem vinst +85%',s:'Planerat',kr:'200 000'},
+    {p:6,a:'Minska Investor B ~70 kkr',r:'32% → 20% av aktiedelen',s:'Planerat',kr:'70 000'},
+    {p:7,a:'Öka Sw. Robur Technology',r:'Teknik 4% → 9% av fonder',s:'Köp',kr:'100 000'},
+    {p:8,a:'Bevaka fastighetssignal',r:'Tidig vändning — ej bekr.',s:'Avvakta',kr:'—'},
+  ],
+};
+
+document.getElementById('hdr-date').textContent = 'Uppdaterad ' + D.upd;
+document.getElementById('hdr-total').textContent = F(D.konto) + ' kr';
+document.getElementById('hdr-ytd').textContent = P(D.ytdP) + ' YTD · +' + F(D.ytdKr) + ' kr';
+
+let cur = 0;
+const pages = ['p0','p1','p2','p3'];
+const rendered = [false,false,false,false];
+
+function go(i) {
+  document.querySelectorAll('.tb').forEach((b,j)=>b.classList.toggle('on',j===i));
+  pages.forEach((id,j)=>document.getElementById(id).classList.toggle('on',j===i));
+  if (!rendered[i]) { renders[i](); rendered[i]=true; }
+  cur = i;
+}
+
+// ── SORT STATE ───────────────────────────────────────
+const sortS = {0:{col:'mv',dir:-1},1:{col:'mv',dir:-1},2:{col:'mv',dir:-1}};
+function sortBy(idx, col) {
+  if (sortS[idx].col === col) sortS[idx].dir = -sortS[idx].dir;
+  else { sortS[idx].col = col; sortS[idx].dir = -1; }
+  r1();
+}
+function sortData(arr, col, dir) {
+  return [...arr].sort((a,b) => {
+    let av = a[col], bv = b[col];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    if (typeof av === 'string') return dir * av.localeCompare(bv,'sv');
+    return dir * (bv - av);
+  });
+}
+function sortInd(idx, col) {
+  if (sortS[idx].col !== col) return '';
+  return `<span class="sort-ind">${sortS[idx].dir === -1 ? '↓' : '↑'}</span>`;
+}
+
+// ── TAB 0: ÖVERSIKT ──────────────────────────────────
+function r0() {
+  let cp=0;
+  const conic = D.allok.map(a=>{const s=cp;cp+=a.p;return`${a.c} ${s.toFixed(1)}% ${cp.toFixed(1)}%`;}).join(',');
+  const html = `
+<div class="notice">Portfölj: ${D.upd} · Index: ${D.idxUpd} · Uttag YTD: ${F(D.uttag)} kr</div>
+<div class="mg">
+  <div class="mc"><div class="ml">YTD Brutto (inkl. uttag)</div><div class="mv pos">${P(D.ytdP)}</div><div class="ms">+${F(D.ytdKr)} kr</div></div>
+  <div class="mc"><div class="ml">YTD Netto (exkl. uttag)</div><div class="mv pos">${P(D.nettoP)}</div><div class="ms">${D.nettoKr>=0?'+':''}${F(D.nettoKr)} kr</div></div>
+  <div class="mc"><div class="ml">Portföljvärde</div><div class="mv blu">${(D.portf/1e6).toFixed(2)}M kr</div><div class="ms">${F(D.portf)} kr</div></div>
+  <div class="mc"><div class="ml">Totalt konto</div><div class="mv">${(D.konto/1e6).toFixed(2)}M kr</div><div class="ms">inkl. barn & Daniel</div></div>
+</div>
+<div class="two">
+  <div class="sc">
+    <div class="st">Allokering</div>
+    <div class="pie-w">
+      <div class="pie" style="background:conic-gradient(${conic})"></div>
+      <div>${D.allok.map(a=>`<div class="lr"><div class="ld" style="background:${a.c}"></div><span class="ln">${a.n}</span><span class="lp" style="width:auto">${F(a.v)} kr · ${a.p}%</span></div>`).join('')}</div>
+    </div>
+  </div>
+  <div class="sc">
+    <div class="st">Makrosignaler</div>
+    ${D.makro.map(m=>`<div class="mr"><div><div class="mn">${m.n}</div><div class="mnote">${m.note}</div></div><div><div class="mval">${m.v}</div><div class="mch" style="color:${m.d===1?'var(--g)':'var(--t2)'}">${m.ch}</div></div></div>`).join('')}
+  </div>
+</div>
+<div class="sc">
+  <div class="st">YTD vs Börsindex — ${D.idxUpd}</div>
+  ${D.idx.map(x=>{const w=Math.abs(x.ytd)/20*100;const c=x.isP?'var(--bl)':x.ytd>D.ytdP?'var(--y)':'var(--g)';return`<div class="ir"><span class="iname" style="${x.isP?'font-weight:700;color:var(--bl)':''}">${x.n}${x.isP?' ◀':''}</span><div class="ibg"><div class="ifil" style="width:${w}%;background:${c}"></div></div><span class="ipct" style="color:${c}">${P(x.ytd)}</span></div>`}).join('')}
+  <div style="font-size:11px;color:var(--t2);font-family:'Courier New',monospace;margin-top:6px">Gult = bättre än portföljen · Blå = portföljen · Grön = sämre</div>
+</div>
+
+<div class="sc">
+  <div class="st">SWOT — portföljanalys</div>
+  <div class="swg">
+    <div class="sw ss"><div class="swt">Styrkor</div>${D.swot.S.map(s=>`<div class="swi">${s}</div>`).join('')}</div>
+    <div class="sw sw2"><div class="swt">Svagheter</div>${D.swot.W.map(s=>`<div class="swi">${s}</div>`).join('')}</div>
+    <div class="sw so"><div class="swt">Möjligheter</div>${D.swot.O.map(s=>`<div class="swi">${s}</div>`).join('')}</div>
+    <div class="sw sth"><div class="swt">Hot</div>${D.swot.T.map(s=>`<div class="swi">${s}</div>`).join('')}</div>
+  </div>
+</div>`;
+  document.getElementById('p0').innerHTML = html;
+}
+
+// ── TAB 1: INNEHAV ───────────────────────────────────
+function r1() {
+  const sub = `<div class="stabs">
+    <button class="stb ${state1===0?'on':''}" onclick="setSub(0)">Aktier (${D.aktier.length})</button>
+    <button class="stb ${state1===1?'on':''}" onclick="setSub(1)">Fonder (${D.fonder.length})</button>
+    <button class="stb ${state1===2?'on':''}" onclick="setSub(2)">Certifikat (${D.cert.length})</button>
+  </div>`;
+  let body='';
+  if (state1===0) body = renderAktier();
+  else if (state1===1) body = renderFonder();
+  else body = renderCert();
+  document.getElementById('p1').innerHTML = sub + body;
+}
+let state1 = 0;
+function setSub(i) { state1 = i; r1(); }
+
+function renderAktier() {
+  const arr = D.aktier;
+  const totalMV = arr.reduce((s,a)=>s+a.mv,0);
+  const totalIK = arr.reduce((s,a)=>s+a.ik,0);
+  const totalSK = arr.reduce((s,a)=>s+a.skK,0);
+  const vinst = arr.filter(a=>a.skP>0).length;
+  const forlust = arr.filter(a=>a.skP<0).length;
+  const buyR = arr.filter(a=>a.rN>=1).length;
+  const sellR = arr.filter(a=>a.rN<=-1||a.rat==='No rating').length;
+  // Tekniska signaler
+  const slarOm = arr.filter(a=>a.close!=null && a.yh!=null && a.s20!=null && a.close>a.yh && a.close>a.s20);
+  const oversald = arr.filter(a=>a.rsi<30);
+  const overkopt = arr.filter(a=>a.rsi>70);
+  // Trendsignaler
+  const vandUpp = arr.filter(a=>a.p1v>1.5 && a.p1m<-2);
+  const vandNed = arr.filter(a=>a.p1v<-1 && a.p1m>3);
+  const topInv = arr.filter(a=>a.skP>10 && a.p1m>2 && a.rN>=1 && a.rsi<70).sort((a,b)=>b.skP-a.skP).slice(0,4);
+  const underInv = arr.filter(a=>a.skP<-5 && a.p1m<0).sort((a,b)=>a.skP-b.skP).slice(0,4);
+  // Vinnare/förlorare
+  const topYTD = [...arr].sort((a,b)=>b.ytd-a.ytd).slice(0,3);
+  const botYTD = [...arr].sort((a,b)=>a.ytd-b.ytd).slice(0,3);
+  const topSK = [...arr].sort((a,b)=>b.skP-a.skP).slice(0,3);
+  const botSK = [...arr].sort((a,b)=>a.skP-b.skP).slice(0,3);
+  const sortedAkt = sortData(arr, sortS[0].col, sortS[0].dir);
+  // Bransch & land
+  const branschAgg = {};
+  arr.forEach(a=>{ branschAgg[a.br]=(branschAgg[a.br]||0)+a.mv; });
+  const branschArr = Object.entries(branschAgg).sort((x,y)=>y[1]-x[1]);
+  const landAgg = {};
+  arr.forEach(a=>{ landAgg[a.la]=(landAgg[a.la]||0)+a.mv; });
+  const landArr = Object.entries(landAgg).sort((x,y)=>y[1]-x[1]);
+  const brColors = ['#4A9EFF','#2ECC8A','#F5B942','#7F77DD','#FF4D6B','#5DC8A0','#85B7EB','#9AA3B8'];
+  
+  return `
+<div class="summary-grid">
+  <div class="sg-cell"><div class="sg-lbl">Totalt MV</div><div class="sg-val">${F(totalMV)}</div><div class="sg-sub">kronor</div></div>
+  <div class="sg-cell"><div class="sg-lbl">Vinst / Förlust</div><div class="sg-val ${totalSK>=0?'pos':'neg'}">${totalSK>=0?'+':''}${F(totalSK)}</div><div class="sg-sub">${P(totalSK/totalIK*100)}</div></div>
+  <div class="sg-cell"><div class="sg-lbl">Vinst / Förlust</div><div class="sg-val"><span class="pos">${vinst}</span> / <span class="neg">${forlust}</span></div><div class="sg-sub">av ${arr.length} innehav</div></div>
+  <div class="sg-cell"><div class="sg-lbl">Rating</div><div class="sg-val"><span class="pos">${buyR}</span> / <span class="neg">${sellR}</span></div><div class="sg-sub">Buy/Sell</div></div>
+</div>
+
+<div class="sc">
+  <div class="st">Tekniska signaler — aktier</div>
+  <div class="signal-grid">
+    <div class="sig-card sig-up">
+      <div class="sig-title">▲ Slår om upp (Close &gt; gårdagens high &amp; &gt; SMA20)</div>
+      ${slarOm.length ? slarOm.map(a=>`<div class="sig-item"><span>${a.n}</span><span class="sig-val pos">${a.close} kr</span></div>`).join('') : '<div class="sig-empty">Inga aktuella signaler</div>'}
+    </div>
+    <div class="sig-card sig-top">
+      <div class="sig-title">⬇ Översåld (RSI &lt; 30) — bevaka köp</div>
+      ${oversald.length ? oversald.map(a=>`<div class="sig-item"><span>${a.n}</span><span class="sig-val" style="color:var(--bl)">RSI ${a.rsi.toFixed(0)}</span></div>`).join('') : '<div class="sig-empty">Inga aktuella signaler</div>'}
+    </div>
+    <div class="sig-card sig-bottom">
+      <div class="sig-title">⬆ Överköpt (RSI &gt; 70) — vinsthemtagning</div>
+      ${overkopt.length ? overkopt.map(a=>`<div class="sig-item"><span>${a.n}</span><span class="sig-val wrn">RSI ${a.rsi.toFixed(0)}</span></div>`).join('') : '<div class="sig-empty">Inga aktuella signaler</div>'}
+    </div>
+  </div>
+</div>
+
+<div class="sc">
+  <div class="st">Trendsignaler — aktier</div>
+  <div class="signal-grid">
+    <div class="sig-card sig-up">
+      <div class="sig-title">▲ Vänder upp (1v &gt; 1m)</div>
+      ${vandUpp.length ? vandUpp.map(a=>`<div class="sig-item"><span>${a.n}</span><span class="sig-val"><span style="color:var(--t)">${F(a.mv/1000)}k</span> · <span style="color:${PC(a.p1v)}">1v ${P(a.p1v)}</span> / <span style="color:${PC(a.p1m)}">1m ${P(a.p1m)}</span></span></div>`).join('') : '<div class="sig-empty">Inga aktuella signaler</div>'}
+    </div>
+    <div class="sig-card sig-down">
+      <div class="sig-title">▼ Vänder ned (1v &lt; 1m)</div>
+      ${vandNed.length ? vandNed.map(a=>`<div class="sig-item"><span>${a.n}</span><span class="sig-val"><span style="color:var(--t)">${F(a.mv/1000)}k</span> · <span style="color:${PC(a.p1v)}">1v ${P(a.p1v)}</span> / <span style="color:${PC(a.p1m)}">1m ${P(a.p1m)}</span></span></div>`).join('') : '<div class="sig-empty">Inga aktuella signaler</div>'}
+    </div>
+    <div class="sig-card sig-top">
+      <div class="sig-title">★ Toppinvesteringar (sedan köp)</div>
+      ${topInv.length ? topInv.map(a=>`<div class="sig-item"><span>${a.n}</span><span class="sig-val"><span style="color:var(--t)">${F(a.mv/1000)}k</span> · <span style="color:${PC(a.skP)}">${P(a.skP)}</span></span></div>`).join('') : '<div class="sig-empty">Inga aktuella signaler</div>'}
+    </div>
+    <div class="sig-card sig-bottom">
+      <div class="sig-title">⚠ Underpresterare (sedan köp)</div>
+      ${underInv.length ? underInv.map(a=>`<div class="sig-item"><span>${a.n}</span><span class="sig-val"><span style="color:var(--t)">${F(a.mv/1000)}k</span> · <span style="color:${PC(a.skP)}">${P(a.skP)}</span></span></div>`).join('') : '<div class="sig-empty">Inga aktuella signaler</div>'}
+    </div>
+  </div>
+</div>
+
+<div class="sc">
+  <div class="st">Vinnare &amp; Förlorare — YTD</div>
+  <div class="combo">
+    <div class="combo-col">
+      <div class="combo-h h-pos">▲ Bäst YTD</div>
+      ${topYTD.map(s=>`<div class="combo-row"><strong>${s.n}</strong><span><span style="color:var(--t);font-family:'Courier New',monospace;font-size:11px">${F(s.mv/1000)}k</span> · <span class="combo-pct pos">${P(s.ytd)}</span></span></div>`).join('')}
+    </div>
+    <div class="combo-col">
+      <div class="combo-h h-neg">▼ Sämst YTD</div>
+      ${botYTD.map(s=>`<div class="combo-row"><strong>${s.n}</strong><span><span style="color:var(--t);font-family:'Courier New',monospace;font-size:11px">${F(s.mv/1000)}k</span> · <span class="combo-pct neg">${P(s.ytd)}</span></span></div>`).join('')}
+    </div>
+  </div>
+</div>
+
+<div class="sc">
+  <div class="st">Vinnare &amp; Förlorare — Sedan köp</div>
+  <div class="combo">
+    <div class="combo-col">
+      <div class="combo-h h-pos">▲ Bäst sedan köp</div>
+      ${topSK.map(s=>`<div class="combo-row"><strong>${s.n}</strong><span><span style="color:var(--t);font-family:'Courier New',monospace;font-size:11px">${F(s.mv/1000)}k</span> · <span class="combo-pct pos">${P(s.skP)}</span></span></div>`).join('')}
+    </div>
+    <div class="combo-col">
+      <div class="combo-h h-neg">▼ Sämst sedan köp</div>
+      ${botSK.map(s=>`<div class="combo-row"><strong>${s.n}</strong><span><span style="color:var(--t);font-family:'Courier New',monospace;font-size:11px">${F(s.mv/1000)}k</span> · <span class="combo-pct neg">${P(s.skP)}</span></span></div>`).join('')}
+    </div>
+  </div>
+</div>
+
+<div class="two">
+  <div class="sc">
+    <div class="st">Branschfördelning</div>
+    ${branschArr.map((b,i)=>`<div class="br"><span class="blbl">${b[0]}</span><div class="bbg"><div class="bfil" style="width:${(b[1]/totalMV*100)}%;background:${brColors[i%brColors.length]}"></div></div><span class="bv" style="width:auto">${F(b[1]/1000)}k · ${(b[1]/totalMV*100).toFixed(0)}%</span></div>`).join('')}
+  </div>
+  <div class="sc">
+    <div class="st">Landfördelning</div>
+    ${landArr.map((l,i)=>`<div class="br"><span class="blbl">${l[0]}</span><div class="bbg"><div class="bfil" style="width:${(l[1]/totalMV*100)}%;background:${brColors[i%brColors.length]}"></div></div><span class="bv" style="width:auto">${F(l[1]/1000)}k · ${(l[1]/totalMV*100).toFixed(0)}%</span></div>`).join('')}
+  </div>
+</div>
+
+<div class="ts"><table class="tbl">
+  <thead><tr>
+    <th onclick="sortBy(0,'n')">Aktie ${sortInd(0,'n')}</th>
+    <th class="r" onclick="sortBy(0,'mv')">Värde ${sortInd(0,'mv')}</th>
+    <th class="r" onclick="sortBy(0,'skP')">Sedan köp ${sortInd(0,'skP')}</th>
+    <th class="r" onclick="sortBy(0,'p1v')">1V ${sortInd(0,'p1v')}</th>
+    <th class="r" onclick="sortBy(0,'p1m')">1M ${sortInd(0,'p1m')}</th>
+    <th class="r" onclick="sortBy(0,'ytd')">YTD ${sortInd(0,'ytd')}</th>
+    <th class="r" onclick="sortBy(0,'rsi')">RSI ${sortInd(0,'rsi')}</th>
+    <th class="c" onclick="sortBy(0,'rN')">Rating ${sortInd(0,'rN')}</th>
+  </tr></thead>
+  <tbody>${sortedAkt.map(s=>`<tr>
+    <td><strong>${s.n}</strong><div class="sub">${s.br} · ${s.la}</div></td>
+    <td class="r"><strong>${F(s.mv)}</strong></td>
+    <td class="r" style="color:${PC(s.skP)}">${P(s.skP)}<div class="sub" style="color:${PC(s.skK)}">${s.skK>=0?'+':''}${F(s.skK)}</div></td>
+    <td class="r" style="color:${PC(s.p1v)}">${P(s.p1v)}</td>
+    <td class="r" style="color:${PC(s.p1m)}">${P(s.p1m)}</td>
+    <td class="r" style="color:${PC(s.ytd)}">${P(s.ytd)}</td>
+    <td class="r" style="color:${s.rsi>70?'var(--r)':s.rsi<30?'var(--g)':'var(--t)'}">${s.rsi.toFixed(0)}</td>
+    <td class="c"><span class="badge ${s.rN>0?'bg-bg':s.rN<0?'bg-r':'bg-x'}">${s.rat}</span></td>
+  </tr>`).join('')}</tbody>
+</table></div>`;
+}
+
+function renderFonder() {
+  const arr = D.fonder;
+  const totalMV = arr.reduce((s,f)=>s+f.mv,0);
+  const totalIK = arr.reduce((s,f)=>s+f.ik,0);
+  const totalSK = totalMV - totalIK;
+  const vinst = arr.filter(f=>f.skP>0).length;
+  const forlust = arr.filter(f=>f.skP<0).length;
+  const saljF = arr.filter(f=>f.act==='Sälj').length;
+  const behallF = arr.filter(f=>f.act==='Behåll' || f.act==='Öka').length;
+  // Signals
+  const vandUpp = arr.filter(f=>f.p1v>1.5 && f.p1m<-1);
+  const vandNed = arr.filter(f=>f.p1v<0 && f.p1m>3);
+  const topF = arr.filter(f=>f.skP>20 && f.p1m!=null && f.p1m>2).sort((a,b)=>b.skP-a.skP).slice(0,4);
+  const underF = arr.filter(f=>f.skP<-3).sort((a,b)=>a.skP-b.skP).slice(0,4);
+  const sortedF = sortData(arr, sortS[1].col, sortS[1].dir);
+  // Vinnare/förlorare
+  const fTopYTD = [...arr].filter(f=>f.ytd!=null).sort((a,b)=>b.ytd-a.ytd).slice(0,3);
+  const fBotYTD = [...arr].filter(f=>f.ytd!=null).sort((a,b)=>a.ytd-b.ytd).slice(0,3);
+  const fTopSK = [...arr].sort((a,b)=>b.skP-a.skP).slice(0,3);
+  const fBotSK = [...arr].sort((a,b)=>a.skP-b.skP).slice(0,3);
+  // Fondtyp-aggregering (bransch)
+  const typAgg = {};
+  arr.forEach(f=>{ typAgg[f.typ]=(typAgg[f.typ]||0)+f.mv; });
+  const typArr = Object.entries(typAgg).sort((x,y)=>y[1]-x[1]);
+  const brColors = ['#FF4D6B','#4A9EFF','#2ECC8A','#85B7EB','#F5B942','#7F77DD','#5DC8A0','#9AA3B8','#2A7AC4','#544E5E'];
+  // FondLand (från Andelar 2026-05-30, inkl. LYSA-fonder). Total fondland-bas: 1 749 233 kr
+  const fondLandTot = 1749233;
+  const fondLand = [
+    {n:'Nordamerika',p:67.48},{n:'Sverige',p:12.17},{n:'Europa',p:8.98},
+    {n:'Asien',p:4.36},{n:'Australien',p:2.82},{n:'Afrika',p:2.09},
+    {n:'Sydamerika',p:1.22},{n:'Norden',p:0.88},
+  ];
+  
+  return `
+<div class="summary-grid">
+  <div class="sg-cell"><div class="sg-lbl">Totalt MV</div><div class="sg-val">${F(totalMV)}</div><div class="sg-sub">kronor (exkl. LYSA)</div></div>
+  <div class="sg-cell"><div class="sg-lbl">Vinst / Förlust</div><div class="sg-val ${totalSK>=0?'pos':'neg'}">${totalSK>=0?'+':''}${F(totalSK)}</div><div class="sg-sub">${P(totalSK/totalIK*100)}</div></div>
+  <div class="sg-cell"><div class="sg-lbl">Vinst / Förlust</div><div class="sg-val"><span class="pos">${vinst}</span> / <span class="neg">${forlust}</span></div><div class="sg-sub">av ${arr.length} fonder</div></div>
+  <div class="sg-cell"><div class="sg-lbl">Sälj / Behåll</div><div class="sg-val"><span class="neg">${saljF}</span> / <span class="pos">${behallF}</span></div><div class="sg-sub">flaggor</div></div>
+</div>
+
+<div class="sc">
+  <div class="st">Trendsignaler — fonder</div>
+  <div class="signal-grid">
+    <div class="sig-card sig-up">
+      <div class="sig-title">▲ Vänder upp (1v &gt; 1m)</div>
+      ${vandUpp.length ? vandUpp.map(f=>`<div class="sig-item"><span style="font-size:11px">${f.n}</span><span class="sig-val"><span style="color:var(--t)">${F(f.mv/1000)}k</span> · <span style="color:${PC(f.p1v)}">1v ${P(f.p1v)}</span> / <span style="color:${PC(f.p1m)}">1m ${P(f.p1m)}</span></span></div>`).join('') : '<div class="sig-empty">Inga aktuella signaler</div>'}
+    </div>
+    <div class="sig-card sig-down">
+      <div class="sig-title">▼ Vänder ned (1v &lt; 1m)</div>
+      ${vandNed.length ? vandNed.map(f=>`<div class="sig-item"><span style="font-size:11px">${f.n}</span><span class="sig-val"><span style="color:var(--t)">${F(f.mv/1000)}k</span> · <span style="color:${PC(f.p1v)}">1v ${P(f.p1v)}</span> / <span style="color:${PC(f.p1m)}">1m ${P(f.p1m)}</span></span></div>`).join('') : '<div class="sig-empty">Inga aktuella signaler</div>'}
+    </div>
+    <div class="sig-card sig-top">
+      <div class="sig-title">★ Toppinvesteringar (sedan köp)</div>
+      ${topF.length ? topF.map(f=>`<div class="sig-item"><span style="font-size:11px">${f.n}</span><span class="sig-val"><span style="color:var(--t)">${F(f.mv/1000)}k</span> · <span style="color:${PC(f.skP)}">${P(f.skP)}</span></span></div>`).join('') : '<div class="sig-empty">Inga aktuella signaler</div>'}
+    </div>
+    <div class="sig-card sig-bottom">
+      <div class="sig-title">⚠ Underpresterare (sedan köp)</div>
+      ${underF.length ? underF.map(f=>`<div class="sig-item"><span style="font-size:11px">${f.n}</span><span class="sig-val"><span style="color:var(--t)">${F(f.mv/1000)}k</span> · <span style="color:${PC(f.skP)}">${P(f.skP)}</span></span></div>`).join('') : '<div class="sig-empty">Inga aktuella signaler</div>'}
+    </div>
+  </div>
+</div>
+
+<div class="sc">
+  <div class="st">Vinnare &amp; Förlorare — YTD</div>
+  <div class="combo">
+    <div class="combo-col">
+      <div class="combo-h h-pos">▲ Bäst YTD</div>
+      ${fTopYTD.map(f=>`<div class="combo-row"><strong style="font-size:11px">${f.n}</strong><span><span style="color:var(--t);font-family:'Courier New',monospace;font-size:11px">${F(f.mv/1000)}k</span> · <span class="combo-pct pos">${P(f.ytd)}</span></span></div>`).join('')}
+    </div>
+    <div class="combo-col">
+      <div class="combo-h h-neg">▼ Sämst YTD</div>
+      ${fBotYTD.map(f=>`<div class="combo-row"><strong style="font-size:11px">${f.n}</strong><span><span style="color:var(--t);font-family:'Courier New',monospace;font-size:11px">${F(f.mv/1000)}k</span> · <span class="combo-pct neg">${P(f.ytd)}</span></span></div>`).join('')}
+    </div>
+  </div>
+</div>
+
+<div class="sc">
+  <div class="st">Vinnare &amp; Förlorare — Sedan köp</div>
+  <div class="combo">
+    <div class="combo-col">
+      <div class="combo-h h-pos">▲ Bäst sedan köp</div>
+      ${fTopSK.map(f=>`<div class="combo-row"><strong style="font-size:11px">${f.n}</strong><span><span style="color:var(--t);font-family:'Courier New',monospace;font-size:11px">${F(f.mv/1000)}k</span> · <span class="combo-pct pos">${P(f.skP)}</span></span></div>`).join('')}
+    </div>
+    <div class="combo-col">
+      <div class="combo-h h-neg">▼ Sämst sedan köp</div>
+      ${fBotSK.map(f=>`<div class="combo-row"><strong style="font-size:11px">${f.n}</strong><span><span style="color:var(--t);font-family:'Courier New',monospace;font-size:11px">${F(f.mv/1000)}k</span> · <span class="combo-pct neg">${P(f.skP)}</span></span></div>`).join('')}
+    </div>
+  </div>
+</div>
+
+<div class="two">
+  <div class="sc">
+    <div class="st">Fondtyp — fördelning</div>
+    ${typArr.map((t,i)=>`<div class="br"><span class="blbl">${t[0]}</span><div class="bbg"><div class="bfil" style="width:${(t[1]/totalMV*100)}%;background:${brColors[i%brColors.length]}"></div></div><span class="bv" style="width:auto">${F(t[1]/1000)}k · ${(t[1]/totalMV*100).toFixed(0)}%</span></div>`).join('')}
+  </div>
+  <div class="sc">
+    <div class="st">Landfördelning (inkl. LYSA)</div>
+    ${fondLand.map((l,i)=>`<div class="br"><span class="blbl">${l.n}</span><div class="bbg"><div class="bfil" style="width:${l.p}%;background:${brColors[i%brColors.length]}"></div></div><span class="bv" style="width:auto">${F(fondLandTot*l.p/100/1000)}k · ${l.p.toFixed(0)}%</span></div>`).join('')}
+  </div>
+</div>
+
+<div class="ts"><table class="tbl">
+  <thead><tr>
+    <th onclick="sortBy(1,'n')">Fond ${sortInd(1,'n')}</th>
+    <th class="r" onclick="sortBy(1,'mv')">Värde ${sortInd(1,'mv')}</th>
+    <th class="r" onclick="sortBy(1,'skP')">Sedan köp ${sortInd(1,'skP')}</th>
+    <th class="r" onclick="sortBy(1,'p1v')">1V ${sortInd(1,'p1v')}</th>
+    <th class="r" onclick="sortBy(1,'p1m')">1M ${sortInd(1,'p1m')}</th>
+    <th class="r" onclick="sortBy(1,'ytd')">YTD ${sortInd(1,'ytd')}</th>
+    <th class="c" onclick="sortBy(1,'act')">Åtgärd ${sortInd(1,'act')}</th>
+  </tr></thead>
+  <tbody>${sortedF.map(f=>`<tr>
+    <td style="max-width:150px"><strong style="font-size:11px">${f.n}</strong><div class="sub">${f.typ}</div></td>
+    <td class="r"><strong>${F(f.mv)}</strong></td>
+    <td class="r" style="color:${PC(f.skP)}">${P(f.skP)}</td>
+    <td class="r" style="color:${PC(f.p1v)}">${f.p1v==null?'—':P(f.p1v)}</td>
+    <td class="r" style="color:${PC(f.p1m)}">${f.p1m==null?'—':P(f.p1m)}</td>
+    <td class="r" style="color:${PC(f.ytd)}">${f.ytd==null?'—':P(f.ytd)}</td>
+    <td class="c"><span class="badge ${BCE[f.act]||'bg-x'}">${f.act}</span></td>
+  </tr>`).join('')}</tbody>
+</table></div>`;
+}
+
+function renderCert() {
+  const arr = D.cert;
+  const totalMV = arr.reduce((s,c)=>s+c.mv,0);
+  const totalIK = arr.reduce((s,c)=>s+c.ik,0);
+  const totalSK = arr.reduce((s,c)=>s+c.skK,0);
+  const adelMV = totalMV + 866131;
+  const adelP = (adelMV / D.portf * 100).toFixed(1);
+  const sortedC = sortData(arr, sortS[2].col, sortS[2].dir);
+  
+  return `
+<div class="summary-grid">
+  <div class="sg-cell"><div class="sg-lbl">Totalt MV</div><div class="sg-val">${F(totalMV)}</div><div class="sg-sub">kronor</div></div>
+  <div class="sg-cell"><div class="sg-lbl">Vinst</div><div class="sg-val pos">+${F(totalSK)}</div><div class="sg-sub">+${(totalSK/totalIK*100).toFixed(0)}%</div></div>
+  <div class="sg-cell"><div class="sg-lbl">Andel av portfölj</div><div class="sg-val">${(totalMV/D.portf*100).toFixed(1)}%</div><div class="sg-sub">${arr.length} certifikat</div></div>
+  <div class="sg-cell"><div class="sg-lbl">Ädelmetall totalt</div><div class="sg-val wrn">${adelP}%</div><div class="sg-sub">inkl. AuAg-fonder</div></div>
+</div>
+
+<div class="sc">
+  <div class="st">Status — ädelmetallcertifikat</div>
+  <div class="signal-grid">
+    ${sortedC.map(c=>`
+    <div class="sig-card ${c.p1m>=0?'sig-top':'sig-down'}">
+      <div class="sig-title">${c.n}</div>
+      <div class="sig-item"><span>Sedan köp</span><span class="sig-val pos">${P(c.skP)}</span></div>
+      <div class="sig-item"><span>YTD</span><span class="sig-val" style="color:${PC(c.ytd)}">${P(c.ytd)}</span></div>
+      <div class="sig-item"><span>1 mån</span><span class="sig-val" style="color:${PC(c.p1m)}">${P(c.p1m)}</span></div>
+    </div>`).join('')}
+  </div>
+</div>
+
+${sortedC.map(c=>`
+<div class="sc">
+  <div style="font-size:16px;font-weight:800;margin-bottom:10px;color:var(--t)">${c.n}</div>
+  <div class="ccg">
+    <div class="cc"><div class="ccl">Marknadsvärde</div><div class="ccv">${F(c.mv)} kr</div></div>
+    <div class="cc"><div class="ccl">Inköpsvärde</div><div class="ccv">${F(c.ik)} kr</div></div>
+    <div class="cc"><div class="ccl">Vinst kr</div><div class="ccv pos">+${F(c.skK)} kr</div></div>
+    <div class="cc"><div class="ccl">Sedan köp</div><div class="ccv pos">${P(c.skP)}</div></div>
+    <div class="cc"><div class="ccl">YTD</div><div class="ccv" style="color:${PC(c.ytd)}">${P(c.ytd)}</div></div>
+    <div class="cc"><div class="ccl">1 månad</div><div class="ccv" style="color:${PC(c.p1m)}">${P(c.p1m)}</div></div>
+  </div>
+</div>`).join('')}
+
+<div class="wbox">⚠ Total ädelmetallexponering:<br>Silver AVA ${F(146136)} + Guld AVA ${F(28074)} + AuAg-fonder ${F(866131)} = <strong>${F(1040341)} kr (28,6% av portfölj)</strong></div>`;
+}
+
+// ── TAB 2: BESLUT ────────────────────────────────────
+function r2() {
+  const risks=[
+    {l:'Investor B av aktier',nu:32.4,max:25,note:'Rekommenderat max 20–25%'},
+    {l:'Atlas Copco av aktier',nu:28.2,max:25,note:'Investor B+Atlas=60,6%'},
+    {l:'AuAg-familjen av fonder',nu:40.0,max:20,note:'4 överlappande fonder'},
+    {l:'Ädelmetaller totalt',nu:28.6,max:15,note:'Inkl. cert: 1 040 kkr'},
+    {l:'Sverige av aktier',nu:92.7,max:60,note:'Geografisk överkoncent.'},
+  ];
+  const sekt=[
+    {s:'Råvaror/ädelmetaller',nu:38.9,dir:'Minska'},
+    {s:'Industri',nu:23.2,dir:'OK'},
+    {s:'Finans',nu:16.3,dir:'OK'},
+    {s:'Teknik',nu:9.4,dir:'Öka'},
+    {s:'Hälsovård',nu:3.8,dir:'Öka'},
+    {s:'Fastigheter',nu:1.8,dir:'Öka*'},
+    {s:'Småbolag (fonder)',nu:3.5,dir:'Öka*'},
+  ];
+  const sD={'Minska':'bg-r','OK':'bg-bg','Öka':'bg-b','Öka*':'bg-x'};
+  const html = `
+<div class="sc">
+  <div class="st-big">Åtgärdsplan Prioriterad</div>
+  ${D.actions.map(a=>`<div class="ar"><div class="anum">${a.p}</div><div class="abody"><div class="aname">${a.a}</div><div class="areason">${a.r}</div></div><div class="aright"><span class="badge ${BST[a.s]}">${a.s}</span><div class="akr">${a.kr} kr</div></div></div>`).join('')}
+</div>
+<div class="sc">
+  <div class="st-big">Koncentrationsrisker</div>
+  ${risks.map(r=>`<div class="rrow"><div class="rh"><span>${r.l}</span><span style="color:${r.nu>r.max?'var(--r)':'var(--g)'};font-family:'Courier New',monospace;font-size:11px;font-weight:700">${r.nu}% ${r.nu>r.max?'▲':'✓'}</span></div><div class="rbg"><div class="rfil" style="width:${Math.min(r.nu,100)}%;background:${r.nu>r.max?'var(--r)':'var(--g)'}"></div></div><div class="rnote">Max: ${r.max}% · ${r.note}</div></div>`).join('')}
+</div>
+<div class="sc">
+  <div class="st-big">Sektor — Över- och undervikt</div>
+  ${sekt.map(s=>`<div class="secr"><span>${s.s}</span><div style="display:flex;align-items:center;gap:8px"><span style="font-family:'Courier New',monospace;font-size:11px;color:var(--t2);font-weight:600">${s.nu}%</span><span class="badge ${sD[s.dir]||'bg-x'}">${s.dir}</span></div></div>`).join('')}
+  <div style="font-size:11px;color:var(--t2);margin-top:9px">* Öka vid bekräftad signal (bevakningspanelen)</div>
+</div>
+<div class="sc">
+  <div class="st-big">Frigörs vid genomförda åtgärder</div>
+  ${[{l:'Sälj TIN + Strand',kr:'17 690'},{l:'Sälj AuAg Essential + Precious Core',kr:'180 193'},{l:'Minska Silver Bullet 200kkr',kr:'200 000'},{l:'Minska Investor B 70kkr',kr:'70 000'}].map(f=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--b);font-size:12px"><span style="color:var(--t)">${f.l}</span><span style="font-family:'Courier New',monospace;font-weight:700;color:var(--bl)">+${f.kr} kr</span></div>`).join('')}
+  <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:14px;font-weight:800;color:var(--t)"><span>TOTALT KAN FRIGÖRAS</span><span style="font-family:'Courier New',monospace;color:var(--g)">+467 883 kr</span></div>
+</div>`;
+  document.getElementById('p2').innerHTML = html;
+}
+
+// ── TAB 3: TREND ─────────────────────────────────────
+function r3() {
+  const W=700,H=145;
+  const vals=D.hist.map(h=>h.k);
+  const mn=Math.min(...vals)-60,mx=Math.max(...vals)+60;
+  const x=i=>20+i*(W-30)/(D.hist.length-1);
+  const y=v=>H-8-(v-mn)/(mx-mn)*(H-18);
+  const pts=D.hist.map((h,i)=>`${x(i)},${y(h.k)}`).join(' ');
+  const fill=`20,${H-8} `+pts+` ${x(D.hist.length-1)},${H-8}`;
+  const sY=y(4071);
+  const plat=[
+    {n:'Avanza',v:2057478,p:48.7,c:'#4A9EFF'},
+    {n:'SAVR',v:1408123,p:33.3,c:'#2A7AC4'},
+    {n:'LYSA',v:358281,p:8.5,c:'#85B7EB'},
+    {n:'Alpcot',v:181608,p:4.3,c:'#0C447C'},
+    {n:'Daniel',v:175000,p:4.1,c:'#9AA3B8'},
+    {n:'Övrigt',v:44187,p:1.1,c:'#3A4358'},
+  ];
+  const ftyp=[
+    {n:'Råvarufonder',p:40.0,c:'#FF4D6B'},
+    {n:'Globalfonder',p:21.8,c:'#4A9EFF'},
+    {n:'LYSA (global)',p:16.0,c:'#2A7AC4'},
+    {n:'Amerikafonder',p:7.9,c:'#85B7EB'},
+    {n:'Teknikfonder',p:4.0,c:'#F5B942'},
+    {n:'Småbolag',p:3.5,c:'#2ECC8A'},
+    {n:'Övrigt',p:6.8,c:'#9AA3B8'},
+  ];
+  const gridVals=[4100,4200,4300,4400,4500];
+  const html = `
+<div class="sc">
+  <div class="st">Kontoutveckling 2026 (kkr) — inkl. barn & Daniel</div>
+  <div class="chart-w">
+    <svg viewBox="0 0 ${W+20} ${H+18}" style="width:100%;overflow:visible">
+      <defs><linearGradient id="grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4A9EFF" stop-opacity=".25"/><stop offset="100%" stop-color="#4A9EFF" stop-opacity="0"/></linearGradient></defs>
+      ${gridVals.map(v=>`<line x1="20" y1="${y(v)}" x2="${W}" y2="${y(v)}" stroke="#3A4358" stroke-width=".5"/><text x="16" y="${y(v)+3}" font-size="8" fill="#C8D0E0" text-anchor="end" font-family="monospace">${v}</text>`).join('')}
+      <line x1="20" y1="${sY}" x2="${W}" y2="${sY}" stroke="#F5B942" stroke-width="1" stroke-dasharray="4,2"/>
+      <text x="22" y="${sY-3}" font-size="8" fill="#F5B942" font-family="monospace">Start 4 071k</text>
+      <polygon points="${fill}" fill="url(#grad)"/>
+      <polyline points="${pts}" fill="none" stroke="#4A9EFF" stroke-width="2" stroke-linejoin="round"/>
+      ${D.hist.map((h,i)=>`<circle cx="${x(i)}" cy="${y(h.k)}" r="2" fill="#4A9EFF"/>`).join('')}
+      <circle cx="${x(D.hist.length-1)}" cy="${y(D.hist[D.hist.length-1].k)}" r="4.5" fill="none" stroke="#2ECC8A" stroke-width="1.5"/>
+      <circle cx="${x(D.hist.length-1)}" cy="${y(D.hist[D.hist.length-1].k)}" r="2.5" fill="#2ECC8A"/>
+      ${D.hist.filter((_,i)=>i%3===0||i===D.hist.length-1).map(h=>{const i=D.hist.indexOf(h);return`<text x="${x(i)}" y="${H+11}" font-size="8" fill="#C8D0E0" text-anchor="middle" font-family="monospace">${h.d}</text>`}).join('')}
+    </svg>
+  </div>
+  <div style="font-size:11px;color:var(--t2);font-family:'Courier New',monospace;margin-top:4px">Gul linje = startvärde 5 jan. Uttag 300 kkr ej inräknade.</div>
+</div>
+<div class="two">
+  <div class="sc">
+    <div class="st">Fondtyper — fördelning</div>
+    ${ftyp.map(f=>`<div class="br"><span class="blbl">${f.n}</span><div class="bbg"><div class="bfil" style="width:${f.p*2.5}%;background:${f.c}"></div></div><span class="bv">${f.p}%</span></div>`).join('')}
+  </div>
+  <div class="sc">
+    <div class="st">Plattformar</div>
+    ${plat.map(pl=>`<div class="br"><span class="blbl">${pl.n}</span><div class="bbg"><div class="bfil" style="width:${pl.p*2}%;background:${pl.c}"></div></div><span class="bv">${pl.p}%</span></div>`).join('')}
+  </div>
+</div>
+<div class="sc">
+  <div class="st">Geografisk fördelning (aktier + fonder)</div>
+  ${[{n:'Nordamerika',p:47.4,c:'#4A9EFF'},{n:'Sverige',p:38.9,c:'#2ECC8A'},{n:'Europa',p:6.0,c:'#5DC8A0'},{n:'Asien',p:2.9,c:'#F5B942'},{n:'Australien',p:1.9,c:'#7A6F88'},{n:'Afrika/Sydamerika',p:2.2,c:'#9AA3B8'}].map(g=>`<div class="br"><span class="blbl">${g.n}</span><div class="bbg"><div class="bfil" style="width:${g.p*2}%;background:${g.c}"></div></div><span class="bv">${g.p}%</span></div>`).join('')}
+</div>`;
+  document.getElementById('p3').innerHTML = html;
+}
+
+const renders = [r0,r1,r2,r3];
+r0(); rendered[0]=true;
+
+// ══════════ CSV-UPPLADDNING & PARSER ══════════
+function cnum(s){
+  if(s==null) return 0;
+  s = String(s).replace(/\u00a0/g,'').replace(/ /g,'').replace(/%/g,'').replace(/\u2212/g,'-').replace(/,/g,'.');
+  s = s.replace(/[^\d.\-]/g,'');
+  if(s===''||s==='.'||s==='-'||s==='-.') return 0;
+  const v = parseFloat(s); return isNaN(v)?0:v;
+}
+function splitCSV(line){
+  const out=[]; let cur='', q=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){ q=!q; }
+    else if((c===','||c===';'||c==='\t') && !q){ out.push(cur); cur=''; }
+    else cur+=c;
+  }
+  out.push(cur); return out;
+}
+function parseCSV(text){
+  const lines = text.split(/\r?\n/).filter(l=>l.trim()!=='');
+  return lines.map(splitCSV);
+}
+function ratN(rat){
+  const r=String(rat).toLowerCase();
+  return r.includes('strong buy')?2:(r==='buy'?1:(r.includes('sell')?-1:0));
+}
+
+function detectAndParse(name, rows){
+  const hdr = rows[0].map(h=>h.trim());
+  const H = {}; hdr.forEach((h,i)=>H[h]=i);
+  const has = k => hdr.some(h=>h===k||h.trim()===k);
+  const idx = k => { for(let i=0;i<hdr.length;i++){ if(hdr[i]===k||hdr[i].trim()===k) return i; } return -1; };
+  
+  // MANUELLT (Nyckel,Värde)
+  if(has('Nyckel') && has('Värde')){
+    const m={}; for(let i=1;i<rows.length;i++){ const k=rows[i][0]?.trim(); const v=rows[i][1]; if(k) m[k]=v; }
+    if(m.Cash!=null) D.cash=cnum(m.Cash);
+    if(m.UttagYTD!=null) D.uttag=cnum(m.UttagYTD);
+    if(m.IB!=null) D.ib=cnum(m.IB);
+    if(m.LYSA!=null) D.lysa=cnum(m.LYSA);
+    if(m.TotaltKonto!=null) D.konto=cnum(m.TotaltKonto);
+    if(m.Datum!=null) D.upd=String(m.Datum).trim();
+    return 'Manuellt';
+  }
+  // AKTIER (har Värdepapper + RSI14)
+  if(idx('Värdepapper')>=0 && idx('RSI14')>=0){
+    const c={vp:idx('Värdepapper'),br:idx('Bransch'),la:idx('Land'),mv:idx('Marknadsvärde'),
+      ik:idx('Inköpsvärde'),sk:idx('Sedan köp kr'),ytd:idx('Perf_YTD'),p1v:idx('Perf_1v'),
+      p1m:idx('Perf_1m'),rsi:idx('RSI14'),rat:idx('Analyst rating'),
+      close:idx('Close'),yh:idx('YestHigh'),s20:idx('SMA20')};
+    const arr=[];
+    for(let i=1;i<rows.length;i++){
+      const r=rows[i]; const mv=cnum(r[c.mv]); if(mv<=0) continue;
+      const ik=cnum(r[c.ik]), sk=cnum(r[c.sk]);
+      arr.push({n:r[c.vp]?.trim(),mv:Math.round(mv),ik:Math.round(ik),skK:Math.round(sk),
+        skP:ik?+(sk/ik*100).toFixed(2):0,br:r[c.br]?.trim(),la:r[c.la]?.trim(),
+        ytd:+cnum(r[c.ytd]).toFixed(2),p1v:+cnum(r[c.p1v]).toFixed(2),p1m:+cnum(r[c.p1m]).toFixed(2),
+        rsi:+cnum(r[c.rsi]).toFixed(2),rat:r[c.rat]?.trim()||'No rating',rN:ratN(r[c.rat]),
+        close:cnum(r[c.close]),yh:cnum(r[c.yh]),s20:cnum(r[c.s20])});
+    }
+    if(arr.length){ D.aktier=arr; return 'Aktier ('+arr.length+')'; }
+  }
+  // FOND (har Fond + FondTyp)
+  if(idx('Fond')>=0 && idx('FondTyp')>=0){
+    const mvCol = hdr.findIndex(h=>/\u00a0/.test(h)||/^\d[\d\s\u00a0]+$/.test(h.trim()));
+    const c={fond:idx('Fond'),typ:idx('FondTyp'),bank:idx('Bank'),ik:idx('Inköpsvärde'),
+      skp:idx('Sedan köp %'),p1v:idx('Perf_1v'),p1m:idx('Perf_1m'),ytd:idx('Perf_YTD')};
+    const ACT=D._actMap||{};
+    const arr=[];
+    for(let i=1;i<rows.length;i++){
+      const r=rows[i]; const mv=cnum(r[mvCol]); if(mv<=0) continue;
+      const ik=cnum(r[c.ik]); const nm=r[c.fond]?.trim();
+      arr.push({n:nm,typ:r[c.typ]?.trim(),bank:r[c.bank]?.trim(),mv:Math.round(mv),ik:Math.round(ik),
+        skP:+cnum(r[c.skp]).toFixed(2),skK:Math.round(mv-ik),
+        p1v:+(cnum(r[c.p1v])*100).toFixed(2),p1m:+(cnum(r[c.p1m])*100).toFixed(2),
+        ytd:+(cnum(r[c.ytd])*100).toFixed(2),act:ACT[nm]||'Behåll'});
+    }
+    if(arr.length){ D.fonder=arr; return 'Fonder ('+arr.length+')'; }
+  }
+  // CERT (har Certifikat)
+  if(idx('Certifikat')>=0 && idx('Sedan köp %')>=0){
+    const mvCol = hdr.findIndex(h=>/\u00a0/.test(h)||/^\d[\d\s\u00a0]+$/.test(h.trim()));
+    const c={n:idx('Certifikat'),ik:idx('Inköpsvärde'),sk:idx('Sedan köp kr'),
+      skp:idx('Sedan köp %'),p1m:idx('Perf_1m'),ytd:idx('Perf_YTD')};
+    const arr=[];
+    for(let i=1;i<rows.length;i++){
+      const r=rows[i]; const mv=cnum(r[mvCol]); if(mv<=0) continue;
+      arr.push({n:r[c.n]?.trim(),mv:Math.round(mv),ik:Math.round(cnum(r[c.ik])),
+        skK:Math.round(cnum(r[c.sk])),skP:+cnum(r[c.skp]).toFixed(2),
+        p1m:+(cnum(r[c.p1m])*100).toFixed(2),ytd:+(cnum(r[c.ytd])*100).toFixed(2)});
+    }
+    if(arr.length){ D.cert=arr; return 'Certifikat ('+arr.length+')'; }
+  }
+  // INDEX (kolumn 1 = datum-header "Uppdaterad:")
+  if(hdr.length>=8 && /Uppdaterad/i.test(hdr[1]||'')){
+    D.idxUpd = hdr[1].replace(/Uppdaterad:\s*/i,'').trim();
+    const want={'Nasdaq 100':'Nasdaq 100','Dow Jones U.S. Index':'Dow Jones US','OMX Stockholm 30':'OMX Stockholm 30',
+      'Dow Jones Industrial Average':'Dow Jones Ind.','OMX Stockholm PI':'OMX Stockholm PI','DAX':'DAX'};
+    const newIdx=[];
+    for(let i=1;i<rows.length;i++){
+      const nm=rows[i][0]?.trim();
+      if(want[nm]!=null){ newIdx.push({n:want[nm],ytd:+(cnum(rows[i][5])*100).toFixed(1),p1m:+(cnum(rows[i][3])*100).toFixed(1),isP:false}); }
+    }
+    if(newIdx.length){
+      newIdx.push({n:'Din portfölj',ytd:D.ytdP,p1m:null,isP:true});
+      newIdx.sort((a,b)=>b.ytd-a.ytd);
+      D.idx=newIdx;
+    }
+    return 'Index';
+  }
+  return null;
+}
+
+// Recompute totals from parsed data
+function recompute(){
+  const aktMV = D.aktier.reduce((s,a)=>s+a.mv,0);
+  const fondMV = D.fonder.reduce((s,f)=>s+f.mv,0);
+  const certMV = D.cert.reduce((s,c)=>s+c.mv,0);
+  D.portf = aktMV + fondMV + certMV + (D.cash||0);
+  // Allokering
+  D.allok = [
+    {n:'Fonder',v:fondMV,p:+(fondMV/D.portf*100).toFixed(2),c:'#4A9EFF'},
+    {n:'Aktier',v:aktMV,p:+(aktMV/D.portf*100).toFixed(2),c:'#2ECC8A'},
+    {n:'Cash',v:(D.cash||0),p:+((D.cash||0)/D.portf*100).toFixed(2),c:'#FF4D6B'},
+    {n:'Certifikat',v:certMV,p:+(certMV/D.portf*100).toFixed(2),c:'#F5B942'},
+  ];
+  // YTD om IB finns. Beräknas mot totalt konto (UB), ej investerat värde.
+  // VF1 (Brutto): belopp = UB - IB, procent = (UB - IB + uttag)/IB
+  // VF2 (Netto):  belopp = UB - IB - uttag, procent = (UB - IB)/IB
+  if(D.ib && D.konto){
+    const ub = D.konto;
+    D.ytdKr = Math.round(ub - D.ib);
+    D.ytdP = +((ub - D.ib + (D.uttag||0))/D.ib*100).toFixed(2);
+    D.nettoKr = Math.round(ub - D.ib - (D.uttag||0));
+    D.nettoP = +((ub - D.ib)/D.ib*100).toFixed(2);
+  }
+  // uppdatera portföljraden i index
+  const pIdx = D.idx.find(x=>x.isP); if(pIdx) pIdx.ytd=D.ytdP;
+  // header
+  document.getElementById('hdr-date').textContent='Uppdaterad '+D.upd;
+  document.getElementById('hdr-total').textContent=F(D.konto||D.portf)+' kr';
+  document.getElementById('hdr-ytd').textContent=P(D.ytdP)+' YTD · +'+F(D.ytdKr)+' kr';
+}
+
+// spara act-mappning så fond-flaggor bevaras vid uppladdning
+D._actMap = {};
+D.fonder.forEach(f=>{ D._actMap[f.n]=f.act; });
+D.lysa = 0; D.ib = 4071016;
+
+// Plocka nyaste fil per typ ur filnamnsdatum (YYYY-MM-DD_Typ.csv).
+// Skyddar mot att en äldre fil skriver över nyare om flera dagars filer markeras.
+// Filer utan känt typ-mönster i namnet släpps igenom oförändrade (parsern avgör).
+function pickLatestByName(files){
+  const TYPE=[[/aktier/i,'aktier'],[/fond/i,'fond'],[/cert/i,'cert'],[/index/i,'index'],[/manuellt/i,'manuellt']];
+  const byType={}, passthrough=[];
+  for(const f of files){
+    const dm=f.name.match(/(\d{4}-\d{2}-\d{2})/); const date=dm?dm[1]:null;
+    let type=null; for(const [re,t] of TYPE){ if(re.test(f.name)){type=t;break;} }
+    if(type===null||date===null){ passthrough.push(f); continue; }
+    if(!byType[type] || date>byType[type].date) byType[type]={file:f,date};
+  }
+  return [...Object.values(byType).map(x=>x.file), ...passthrough];
+}
+
+/* ============================================================
+   DATAKÄLLOR — publicerade Google Sheets (samma dokument som Control Tower)
+   Byt/uppdatera URL:er här om flikarna publiceras om.
+   Verifiera gid mot rätt flik i Sheets (#gid=) om något blir tomt.
+   ============================================================ */
+const SHEET_URLS = {
+  aktier:   'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjMpa4IQXFHM63YX6hZQS1t1o6zmMDrmCt62Tp75-DL1xJ2ja43iUbqMxh36WVbcRQi_mjB6xtQOcA/pub?gid=1780579688&single=true&output=csv',
+  fond:     'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjMpa4IQXFHM63YX6hZQS1t1o6zmMDrmCt62Tp75-DL1xJ2ja43iUbqMxh36WVbcRQi_mjB6xtQOcA/pub?gid=654816931&single=true&output=csv',
+  cert:     'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjMpa4IQXFHM63YX6hZQS1t1o6zmMDrmCt62Tp75-DL1xJ2ja43iUbqMxh36WVbcRQi_mjB6xtQOcA/pub?gid=253515450&single=true&output=csv',
+  index:    'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjMpa4IQXFHM63YX6hZQS1t1o6zmMDrmCt62Tp75-DL1xJ2ja43iUbqMxh36WVbcRQi_mjB6xtQOcA/pub?gid=383886314&single=true&output=csv',
+  manuellt: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjMpa4IQXFHM63YX6hZQS1t1o6zmMDrmCt62Tp75-DL1xJ2ja43iUbqMxh36WVbcRQi_mjB6xtQOcA/pub?gid=1674815474&single=true&output=csv'
+};
+
+// Hämta alla flikar via fetch (körs i webbläsaren). Ordning: manuellt+index sist
+// spelar ingen roll här — recompute() körs efter att allt parsats.
+async function fetchAllSheets(){
+  const status=document.getElementById('upstatus');
+  if(status) status.textContent='Hämtar färsk data från Google Sheets…';
+  // Manuellt först så D.ib/konto finns när Index beräknar portföljraden
+  const order=['manuellt','aktier','fond','cert','index'];
+  const done=[], failed=[];
+  const fetched=await Promise.allSettled(order.map(async t=>{
+    const res=await fetch(SHEET_URLS[t],{cache:'no-store'});
+    if(!res.ok) throw new Error(t+' HTTP '+res.status);
+    return {t, text:await res.text()};
+  }));
+  // bearbeta i definierad ordning (inte i den ordning de råkar komma)
+  const byType={};
+  fetched.forEach((r,i)=>{ if(r.status==='fulfilled') byType[order[i]]=r.value.text; else failed.push(order[i]); });
+  for(const t of order){
+    if(!byType[t]) continue;
+    try{ const res=detectAndParse(t, parseCSV(byType[t])); if(res) done.push(res); }
+    catch(err){ console.error(t,err); failed.push(t); }
+  }
+  if(done.length){
+    recompute();
+    rendered.fill(false);
+    renders[cur](); rendered[cur]=true;
+    if(status){
+      status.textContent='✓ Hämtat: '+done.join(', ')+' · '+new Date().toLocaleTimeString('sv-SE');
+      if(failed.length) status.textContent+=' (ej hämtat: '+failed.join(', ')+')';
+    }
+  } else if(status){
+    status.textContent='⚠ Kunde inte hämta data. Kontrollera länkarna eller ladda upp filer manuellt.';
+  }
+}
+
+document.getElementById('csvup').addEventListener('change', async (e)=>{
+  const files=pickLatestByName([...e.target.files]); if(!files.length) return;
+  const status=document.getElementById('upstatus');
+  status.textContent='Läser '+files.length+' filer...';
+  const done=[];
+  for(const f of files){
+    try{
+      const txt=await f.text();
+      const rows=parseCSV(txt);
+      const res=detectAndParse(f.name, rows);
+      if(res) done.push(res);
+    }catch(err){ console.error(f.name,err); }
+  }
+  recompute();
+  rendered.fill(false);
+  renders[cur](); rendered[cur]=true;
+  status.textContent='✓ Inläst: '+(done.join(', ')||'inga kända filer')+' · '+new Date().toLocaleTimeString('sv-SE');
+});
+
+// Hämta automatiskt vid sidladdning (fetch primärt, uppladdning som reserv)
+fetchAllSheets();
+
+</script>
+</body>
+</html>
