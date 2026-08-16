@@ -150,8 +150,7 @@ html,body{background:var(--bg);color:var(--t);font-family:-apple-system,'Segoe U
 <div class="hdr">
   <div class="hdr-top">
     <div>
-      <div class="hdr-lbl">Portföljdashboard · Mattias</div>
-      <div class="hdr-name" id="hdr-date">Uppdaterad —</div>
+      <div class="hdr-lbl">Portföljdashboard <span style="font-size:11px;color:var(--t3);font-weight:400;letter-spacing:.04em">· Mattias</span></div>
     </div>
     <div>
       <div class="hdr-val" id="hdr-total">—</div>
@@ -182,7 +181,7 @@ const BCE = {'Sälj':'bg-r','Minska':'bg-y','Behåll':'bg-bg','Öka':'bg-b','Bev
 const BST = {'Nu':'bg-r','Planerat':'bg-y','Köp':'bg-b','Avvakta':'bg-x'};
 
 const D = {
-  upd: '2026-05-30', idxUpd: '2026-06-02',
+  upd: '2026-05-30', idxUpd: '2026-06-02', fetchTime: null,
   konto: 4243605, portf: 3659481, total: 3659481, reserv: 0, ytdKr: 172589, ytdP: 11.61,
   nettoKr: -127411, nettoP: 4.24,
   cash: 727091, uttag: 300000, likvid: [],
@@ -281,7 +280,6 @@ const D = {
   ],
 };
 
-document.getElementById('hdr-date').textContent = 'Uppdaterad ' + D.upd;
 document.getElementById('hdr-total').textContent = F(D.total||D.portf) + ' kr';
 document.getElementById('hdr-ytd').textContent = P(D.ytdP) + ' YTD · +' + F(D.ytdKr) + ' kr';
 
@@ -323,7 +321,7 @@ function r0() {
   let cp=0;
   const conic = D.allok.map(a=>{const s=cp;cp+=a.p;return`${a.c} ${s.toFixed(1)}% ${cp.toFixed(1)}%`;}).join(',');
   const html = `
-<div class="notice">Portfölj: ${D.upd} · Index: ${D.idxUpd} · Uttag YTD: ${F(D.uttag)} kr</div>
+<div class="notice">📅 Senast uppdaterad: ${D.fetchTime ? D.fetchTime.toLocaleString('sv-SE',{dateStyle:'short',timeStyle:'short'}) : '—'} · Index: ${D.idxUpd} · Uttag YTD: ${F(D.uttag)} kr</div>
 <div class="mg">
   <div class="mc"><div class="ml">YTD Brutto (inkl. uttag)</div><div class="mv pos">${P(D.ytdP)}</div><div class="ms">+${F(D.ytdKr)} kr</div></div>
   <div class="mc"><div class="ml">YTD Netto (exkl. uttag)</div><div class="mv pos">${P(D.nettoP)}</div><div class="ms">${D.nettoKr>=0?'+':''}${F(D.nettoKr)} kr</div></div>
@@ -342,6 +340,11 @@ function r0() {
     <div class="st">Makrosignaler</div>
     ${D.makro.map(m=>`<div class="mr"><div><div class="mn">${m.n}</div><div class="mnote">${m.note}</div></div><div><div class="mval">${m.v}</div><div class="mch" style="color:${m.d===1?'var(--g)':'var(--t2)'}">${m.ch}</div></div></div>`).join('')}
   </div>
+</div>
+<div class="sc">
+  <div class="st">Saldo per leverantör <span style="font-size:10px;color:var(--t3);font-weight:400">(totalt, för mobiljämförelse)</span></div>
+  ${(D.providers||[]).map(p=>`<div class="mr"><div class="mn">${p.n}</div><div class="mval" style="font-family:'Courier New',monospace">${F(p.v)} kr</div></div>`).join('')}
+  <div class="mr" style="border-top:1px solid var(--b);margin-top:4px;padding-top:8px"><div class="mn" style="font-weight:700">Summa</div><div class="mval" style="font-weight:800;font-family:'Courier New',monospace">${F((D.providers||[]).reduce((s,p)=>s+p.v,0))} kr</div></div>
 </div>
 <div class="sc">
   <div class="st">YTD vs Börsindex — ${D.idxUpd}</div>
@@ -874,7 +877,7 @@ function detectAndParse(name, rows){
   if(idx('Värdepapper')>=0 && idx('RSI14')>=0){
     const c={vp:idx('Värdepapper'),br:idx('Bransch'),la:idx('Land'),mv:idx('Marknadsvärde'),
       ik:idx('Inköpsvärde'),sk:idx('Sedan köp kr'),ytd:idx('Perf_YTD'),p1v:idx('Perf_1v'),
-      p1m:idx('Perf_1m'),rsi:idx('RSI14'),rat:idx('Analyst rating'),
+      p1m:idx('Perf_1m'),rsi:idx('RSI14'),rat:idx('Analyst rating'),bank:idx('Bank'),
       close:idx('Close'),yh:idx('YestHigh'),s20:idx('SMA20')};
     const arr=[];
     for(let i=1;i<rows.length;i++){
@@ -882,6 +885,7 @@ function detectAndParse(name, rows){
       const ik=cnum(r[c.ik]), sk=cnum(r[c.sk]);
       arr.push({n:r[c.vp]?.trim(),mv:Math.round(mv),ik:Math.round(ik),skK:Math.round(sk),
         skP:ik?+(sk/ik*100).toFixed(2):0,br:r[c.br]?.trim(),la:r[c.la]?.trim(),
+        bank:(c.bank>=0?r[c.bank]?.trim():'')||'Avanza',
         ytd:+cnum(r[c.ytd]).toFixed(2),p1v:+cnum(r[c.p1v]).toFixed(2),p1m:+cnum(r[c.p1m]).toFixed(2),
         rsi:+cnum(r[c.rsi]).toFixed(2),rat:r[c.rat]?.trim()||'No rating',rN:ratN(r[c.rat]),
         close:cnum(r[c.close]),yh:cnum(r[c.yh]),s20:cnum(r[c.s20])});
@@ -913,11 +917,12 @@ function detectAndParse(name, rows){
     let mvCol = idx('Marknadsvärde');
     if(mvCol<0) mvCol = hdr.findIndex(h=>/\u00a0/.test(h)||/^\d[\d\s\u00a0]+$/.test(h.trim()));
     const c={n:idx('Certifikat'),ik:idx('Inköpsvärde'),sk:idx('Sedan köp kr'),
-      skp:idx('Sedan köp %'),p1m:idx('Perf_1m'),ytd:idx('Perf_YTD')};
+      skp:idx('Sedan köp %'),p1m:idx('Perf_1m'),ytd:idx('Perf_YTD'),bank:idx('Bank')};
     const arr=[];
     for(let i=1;i<rows.length;i++){
       const r=rows[i]; const mv=cnum(r[mvCol]); if(mv<=0) continue;
       arr.push({n:r[c.n]?.trim(),mv:Math.round(mv),ik:Math.round(cnum(r[c.ik])),
+        bank:(c.bank>=0?r[c.bank]?.trim():'')||'Avanza',
         skK:Math.round(cnum(r[c.sk])),skP:+cnum(r[c.skp]).toFixed(2),
         p1m:+(cnum(r[c.p1m])*100).toFixed(2),ytd:+(cnum(r[c.ytd])*100).toFixed(2)});
     }
@@ -959,7 +964,29 @@ function recompute(){
     {n:'Cash',v:(D.cash||0),p:+((D.cash||0)/D.portf*100).toFixed(2),c:'#FF4D6B'},
     {n:'Certifikat',v:certMV,p:+(certMV/D.portf*100).toFixed(2),c:'#F5B942'},
   ];
-  // YTD mot aktiv portfölj (D.portf), ej total. Lägenhetslikviden (SBAB)
+  // Saldo per leverantör (för mobiljämförelse). Inkluderar allt: värdepapper,
+  // fonder, cert OCH likviditet (både Taktisk och Reserv).
+  // Likviditet-rader mappas till leverantör via namnet.
+  const prov={};
+  const add=(bank,mv)=>{ if(!bank) bank='Okänd'; prov[bank]=(prov[bank]||0)+mv; };
+  D.aktier.forEach(a=>add(a.bank||'Avanza', a.mv));
+  D.fonder.forEach(f=>add(f.bank||'Okänd', f.mv));
+  D.cert.forEach(c=>add(c.bank||'Avanza', c.mv));
+  (D.likvid||[]).forEach(l=>{
+    const nm=(l.n||'').toLowerCase();
+    let bank='Okänd';
+    if(nm.includes('lysakonto')) bank='LYSA';
+    else if(nm.includes('caza')||nm.includes('avanza')) bank='Avanza';
+    else if(nm.includes('csbab')||nm.includes('sbab')) bank='SBAB';
+    else if(nm.includes('privatkonto')||nm.includes('seb')) bank='SEB';
+    else if(nm.includes('savr')) bank='SAVR';
+    else if(nm.includes('alpcot')) bank='Alpcot';
+    add(bank, l.mv);
+  });
+  D.providers = Object.entries(prov)
+    .map(([n,v])=>({n, v:Math.round(v)}))
+    .sort((a,b)=>b.v-a.v);
+
   // ingick inte i IB 5 jan och ska därför inte räknas som avkastning.
   // VF1 (Brutto): procent = (UB - IB + uttag)/IB
   // VF2 (Netto):  procent = (UB - IB)/IB
@@ -973,7 +1000,6 @@ function recompute(){
   // uppdatera portföljraden i index
   const pIdx = D.idx.find(x=>x.isP); if(pIdx) pIdx.ytd=D.ytdP;
   // header
-  document.getElementById('hdr-date').textContent='Uppdaterad '+D.upd;
   document.getElementById('hdr-total').textContent=F(D.total||D.portf)+' kr';
   document.getElementById('hdr-ytd').textContent=P(D.ytdP)+' YTD · +'+F(D.ytdKr)+' kr';
 }
@@ -1034,6 +1060,7 @@ async function fetchAllSheets(){
     catch(err){ console.error(t,err); failed.push(t); }
   }
   if(done.length){
+    D.fetchTime = new Date();
     recompute();
     rendered.fill(false);
     renders[cur](); rendered[cur]=true;
