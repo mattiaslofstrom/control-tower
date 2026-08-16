@@ -183,9 +183,9 @@ const BST = {'Nu':'bg-r','Planerat':'bg-y','Köp':'bg-b','Avvakta':'bg-x'};
 
 const D = {
   upd: '2026-05-30', idxUpd: '2026-06-02',
-  konto: 4243605, portf: 3659481, ytdKr: 172589, ytdP: 11.61,
+  konto: 4243605, portf: 3659481, total: 3659481, reserv: 0, ytdKr: 172589, ytdP: 11.61,
   nettoKr: -127411, nettoP: 4.24,
-  cash: 727091, uttag: 300000,
+  cash: 727091, uttag: 300000, likvid: [],
   allok: [
     {n:'Fonder',v:1935075,p:52.88,c:'#4A9EFF'},
     {n:'Aktier',v:823104,p:22.49,c:'#2ECC8A'},
@@ -835,13 +835,32 @@ function detectAndParse(name, rows){
   // MANUELLT (Nyckel,Värde)
   if(has('Nyckel') && has('Värde')){
     const m={}; for(let i=1;i<rows.length;i++){ const k=rows[i][0]?.trim(); const v=rows[i][1]; if(k) m[k]=v; }
-    if(m.Cash!=null) D.cash=cnum(m.Cash);
+    // Cash och TotaltKonto läses INTE längre härifrån — de kommer från Likviditet-fliken.
     if(m.UttagYTD!=null) D.uttag=cnum(m.UttagYTD);
+    if(m['UttagYTD']==null && m['Uttag YTD']!=null) D.uttag=cnum(m['Uttag YTD']);
     if(m.IB!=null) D.ib=cnum(m.IB);
-    if(m.LYSA!=null) D.lysa=cnum(m.LYSA);
-    if(m.TotaltKonto!=null) D.konto=cnum(m.TotaltKonto);
+    if(m.Dreams!=null) D.dreams=cnum(m.Dreams);
+    if(m['Daniel lån']!=null) D.daniel=cnum(m['Daniel lån']);
+    if(m['DanielLan']!=null) D.daniel=cnum(m['DanielLan']);
     if(m.Datum!=null) D.upd=String(m.Datum).trim();
     return 'Manuellt';
+  }
+  // LIKVIDITET (har Likviditet + Typ). Summerar Taktisk vs Reserv.
+  // Taktisk (LYSA, AZA-cash, SEB) -> D.cash (in i allokering).
+  // Reserv (SBAB-lägenhetslikvid) -> D.reserv (bara i totalen).
+  if(idx('Likviditet')>=0 && idx('Typ')>=0){
+    const cN=idx('Likviditet'), cMV=idx('Marknadsvärde'), cT=idx('Typ');
+    let taktisk=0, reserv=0; const rowsL=[];
+    for(let i=1;i<rows.length;i++){
+      const nm=rows[i][cN]?.trim(); if(!nm) continue;
+      const mv=cnum(rows[i][cMV]); const typ=(rows[i][cT]||'').trim().toLowerCase();
+      if(typ==='reserv'){ reserv+=mv; } else { taktisk+=mv; }  // default = taktisk
+      rowsL.push({n:nm,mv:Math.round(mv),typ:typ==='reserv'?'Reserv':'Taktisk'});
+    }
+    D.cash   = Math.round(taktisk);
+    D.reserv = Math.round(reserv);
+    D.likvid = rowsL;
+    return 'Likviditet ('+rowsL.length+')';
   }
   // AKTIER (har Värdepapper + RSI14)
   if(idx('Värdepapper')>=0 && idx('RSI14')>=0){
@@ -917,19 +936,23 @@ function recompute(){
   const aktMV = D.aktier.reduce((s,a)=>s+a.mv,0);
   const fondMV = D.fonder.reduce((s,f)=>s+f.mv,0);
   const certMV = D.cert.reduce((s,c)=>s+c.mv,0);
+  // Aktiv portfölj = värdepapper + taktisk cash (SBAB-reserv ingår EJ här)
   D.portf = aktMV + fondMV + certMV + (D.cash||0);
-  // Allokering
+  // Total förmögenhet = aktiv portfölj + reserv (SBAB-lägenhetslikvid)
+  D.total = D.portf + (D.reserv||0);
+  // Allokering — mot aktiv portfölj. Reserv visas ej (skulle bli ~78% cash).
   D.allok = [
     {n:'Fonder',v:fondMV,p:+(fondMV/D.portf*100).toFixed(2),c:'#4A9EFF'},
     {n:'Aktier',v:aktMV,p:+(aktMV/D.portf*100).toFixed(2),c:'#2ECC8A'},
     {n:'Cash',v:(D.cash||0),p:+((D.cash||0)/D.portf*100).toFixed(2),c:'#FF4D6B'},
     {n:'Certifikat',v:certMV,p:+(certMV/D.portf*100).toFixed(2),c:'#F5B942'},
   ];
-  // YTD om IB finns. Beräknas mot totalt konto (UB), ej investerat värde.
-  // VF1 (Brutto): belopp = UB - IB, procent = (UB - IB + uttag)/IB
-  // VF2 (Netto):  belopp = UB - IB - uttag, procent = (UB - IB)/IB
-  if(D.ib && D.konto){
-    const ub = D.konto;
+  // YTD mot aktiv portfölj (D.portf), ej total. Lägenhetslikviden (SBAB)
+  // ingick inte i IB 5 jan och ska därför inte räknas som avkastning.
+  // VF1 (Brutto): procent = (UB - IB + uttag)/IB
+  // VF2 (Netto):  procent = (UB - IB)/IB
+  if(D.ib && D.portf){
+    const ub = D.portf;
     D.ytdKr = Math.round(ub - D.ib);
     D.ytdP = +((ub - D.ib + (D.uttag||0))/D.ib*100).toFixed(2);
     D.nettoKr = Math.round(ub - D.ib - (D.uttag||0));
@@ -939,7 +962,7 @@ function recompute(){
   const pIdx = D.idx.find(x=>x.isP); if(pIdx) pIdx.ytd=D.ytdP;
   // header
   document.getElementById('hdr-date').textContent='Uppdaterad '+D.upd;
-  document.getElementById('hdr-total').textContent=F(D.konto||D.portf)+' kr';
+  document.getElementById('hdr-total').textContent=F(D.total||D.portf)+' kr';
   document.getElementById('hdr-ytd').textContent=P(D.ytdP)+' YTD · +'+F(D.ytdKr)+' kr';
 }
 
@@ -973,7 +996,8 @@ const SHEET_URLS = {
   fond:     'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjMpa4IQXFHM63YX6hZQS1t1o6zmMDrmCt62Tp75-DL1xJ2ja43iUbqMxh36WVbcRQi_mjB6xtQOcA/pub?gid=654816931&single=true&output=csv',
   cert:     'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjMpa4IQXFHM63YX6hZQS1t1o6zmMDrmCt62Tp75-DL1xJ2ja43iUbqMxh36WVbcRQi_mjB6xtQOcA/pub?gid=253515450&single=true&output=csv',
   index:    'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjMpa4IQXFHM63YX6hZQS1t1o6zmMDrmCt62Tp75-DL1xJ2ja43iUbqMxh36WVbcRQi_mjB6xtQOcA/pub?gid=383886314&single=true&output=csv',
-  manuellt: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjMpa4IQXFHM63YX6hZQS1t1o6zmMDrmCt62Tp75-DL1xJ2ja43iUbqMxh36WVbcRQi_mjB6xtQOcA/pub?gid=1674815474&single=true&output=csv'
+  manuellt: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjMpa4IQXFHM63YX6hZQS1t1o6zmMDrmCt62Tp75-DL1xJ2ja43iUbqMxh36WVbcRQi_mjB6xtQOcA/pub?gid=1674815474&single=true&output=csv',
+  likviditet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjMpa4IQXFHM63YX6hZQS1t1o6zmMDrmCt62Tp75-DL1xJ2ja43iUbqMxh36WVbcRQi_mjB6xtQOcA/pub?gid=26694299&single=true&output=csv'
 };
 
 // Hämta alla flikar via fetch (körs i webbläsaren). Ordning: manuellt+index sist
@@ -982,7 +1006,7 @@ async function fetchAllSheets(){
   const status=document.getElementById('upstatus');
   if(status) status.textContent='Hämtar färsk data från Google Sheets…';
   // Manuellt först så D.ib/konto finns när Index beräknar portföljraden
-  const order=['manuellt','aktier','fond','cert','index'];
+  const order=['manuellt','likviditet','aktier','fond','cert','index'];
   const done=[], failed=[];
   const fetched=await Promise.allSettled(order.map(async t=>{
     const res=await fetch(SHEET_URLS[t],{cache:'no-store'});
@@ -1035,3 +1059,7 @@ fetchAllSheets();
 </script>
 </body>
 </html>
+
+,,
+
+
