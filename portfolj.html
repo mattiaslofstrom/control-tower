@@ -10,7 +10,7 @@
 html,body{background:var(--bg);color:var(--t);font-family:-apple-system,'Segoe UI',sans-serif;font-size:14px;min-height:100%}
 .hdr{background:var(--bg2);border-bottom:1px solid var(--b);padding:11px 14px;position:sticky;top:0;z-index:99}
 .hdr-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
-.hdr-lbl{font-size:10px;color:var(--t3);letter-spacing:.12em;text-transform:uppercase;font-family:'Courier New',monospace}
+.hdr-lbl{font-size:15px;color:var(--t);letter-spacing:.08em;text-transform:uppercase;font-family:'Courier New',monospace;font-weight:700}
 .hdr-name{font-size:14px;font-weight:700;color:var(--t)}
 .hdr-val{font-size:17px;font-weight:800;text-align:right;color:var(--t)}
 .hdr-ytd{font-size:11px;color:var(--g);font-family:'Courier New',monospace;text-align:right;margin-top:1px;font-weight:700}
@@ -282,7 +282,7 @@ const D = {
 };
 
 document.getElementById('hdr-date').textContent = 'Uppdaterad ' + D.upd;
-document.getElementById('hdr-total').textContent = F(D.konto) + ' kr';
+document.getElementById('hdr-total').textContent = F(D.total||D.portf) + ' kr';
 document.getElementById('hdr-ytd').textContent = P(D.ytdP) + ' YTD · +' + F(D.ytdKr) + ' kr';
 
 let cur = 0;
@@ -328,7 +328,7 @@ function r0() {
   <div class="mc"><div class="ml">YTD Brutto (inkl. uttag)</div><div class="mv pos">${P(D.ytdP)}</div><div class="ms">+${F(D.ytdKr)} kr</div></div>
   <div class="mc"><div class="ml">YTD Netto (exkl. uttag)</div><div class="mv pos">${P(D.nettoP)}</div><div class="ms">${D.nettoKr>=0?'+':''}${F(D.nettoKr)} kr</div></div>
   <div class="mc"><div class="ml">Portföljvärde</div><div class="mv blu">${(D.portf/1e6).toFixed(2)}M kr</div><div class="ms">${F(D.portf)} kr</div></div>
-  <div class="mc"><div class="ml">Totalt konto</div><div class="mv">${(D.konto/1e6).toFixed(2)}M kr</div><div class="ms">inkl. barn & Daniel</div></div>
+  <div class="mc"><div class="ml">Reserv (SBAB)</div><div class="mv">${((D.reserv||0)/1e6).toFixed(2)}M kr</div><div class="ms">från lägenhetsförsäljning</div></div>
 </div>
 <div class="two">
   <div class="sc">
@@ -762,7 +762,7 @@ function r3() {
   const gridVals=[4100,4200,4300,4400,4500];
   const html = `
 <div class="sc">
-  <div class="st">Kontoutveckling 2026 (kkr) — inkl. barn & Daniel</div>
+  <div class="st">Kontoutveckling 2026 (kkr) — aktiv portfölj</div>
   <div class="chart-w">
     <svg viewBox="0 0 ${W+20} ${H+18}" style="width:100%;overflow:visible">
       <defs><linearGradient id="grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4A9EFF" stop-opacity=".25"/><stop offset="100%" stop-color="#4A9EFF" stop-opacity="0"/></linearGradient></defs>
