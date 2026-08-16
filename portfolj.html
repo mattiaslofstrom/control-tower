@@ -849,17 +849,25 @@ function detectAndParse(name, rows){
   // Taktisk (LYSA, AZA-cash, SEB) -> D.cash (in i allokering).
   // Reserv (SBAB-lägenhetslikvid) -> D.reserv (bara i totalen).
   if(idx('Likviditet')>=0 && idx('Typ')>=0){
-    const cN=idx('Likviditet'), cMV=idx('Marknadsvärde'), cT=idx('Typ');
+    const cN=idx('Likviditet'), cT=idx('Typ');
+    // Marknadsvärde-kolumnen kan ha NBSP eller extra tecken i rubriken.
+    // Hitta den robust: leta efter rubrik som börjar med "Marknad".
+    let cMV=idx('Marknadsvärde');
+    if(cMV<0){ for(let i=0;i<hdr.length;i++){ if(hdr[i].replace(/[\s\u00a0]/g,'').toLowerCase().startsWith('marknad')){ cMV=i; break; } } }
+    if(cMV<0) cMV=1; // fallback: andra kolumnen
     let taktisk=0, reserv=0; const rowsL=[];
     for(let i=1;i<rows.length;i++){
       const nm=rows[i][cN]?.trim(); if(!nm) continue;
-      const mv=cnum(rows[i][cMV]); const typ=(rows[i][cT]||'').trim().toLowerCase();
+      const mv=cnum(rows[i][cMV]);
+      // Normalisera Typ hårt: ta bort all whitespace inkl NBSP, gemener
+      const typ=(rows[i][cT]||'').replace(/[\s\u00a0]/g,'').toLowerCase();
       if(typ==='reserv'){ reserv+=mv; } else { taktisk+=mv; }  // default = taktisk
       rowsL.push({n:nm,mv:Math.round(mv),typ:typ==='reserv'?'Reserv':'Taktisk'});
     }
     D.cash   = Math.round(taktisk);
     D.reserv = Math.round(reserv);
     D.likvid = rowsL;
+    console.log('Likviditet parsad:', {taktisk:D.cash, reserv:D.reserv, rader:rowsL});
     return 'Likviditet ('+rowsL.length+')';
   }
   // AKTIER (har Värdepapper + RSI14)
@@ -882,7 +890,10 @@ function detectAndParse(name, rows){
   }
   // FOND (har Fond + FondTyp)
   if(idx('Fond')>=0 && idx('FondTyp')>=0){
-    const mvCol = hdr.findIndex(h=>/\u00a0/.test(h)||/^\d[\d\s\u00a0]+$/.test(h.trim()));
+    // Marknadsvärde: använd namngiven kolumn i första hand, annars
+    // fall tillbaka på tal-rubrik-detektor (om rubriken råkar vara ett tal).
+    let mvCol = idx('Marknadsvärde');
+    if(mvCol<0) mvCol = hdr.findIndex(h=>/\u00a0/.test(h)||/^\d[\d\s\u00a0]+$/.test(h.trim()));
     const c={fond:idx('Fond'),typ:idx('FondTyp'),bank:idx('Bank'),ik:idx('Inköpsvärde'),
       skp:idx('Sedan köp %'),p1v:idx('Perf_1v'),p1m:idx('Perf_1m'),ytd:idx('Perf_YTD')};
     const ACT=D._actMap||{};
@@ -899,7 +910,8 @@ function detectAndParse(name, rows){
   }
   // CERT (har Certifikat)
   if(idx('Certifikat')>=0 && idx('Sedan köp %')>=0){
-    const mvCol = hdr.findIndex(h=>/\u00a0/.test(h)||/^\d[\d\s\u00a0]+$/.test(h.trim()));
+    let mvCol = idx('Marknadsvärde');
+    if(mvCol<0) mvCol = hdr.findIndex(h=>/\u00a0/.test(h)||/^\d[\d\s\u00a0]+$/.test(h.trim()));
     const c={n:idx('Certifikat'),ik:idx('Inköpsvärde'),sk:idx('Sedan köp kr'),
       skp:idx('Sedan köp %'),p1m:idx('Perf_1m'),ytd:idx('Perf_YTD')};
     const arr=[];
@@ -1059,7 +1071,3 @@ fetchAllSheets();
 </script>
 </body>
 </html>
-
-,,
-
-
